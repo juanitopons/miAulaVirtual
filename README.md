@@ -29,6 +29,7 @@ Android version compatibility: 2.0 and onward
 + Clean code
 
 ## Change Log ##
+None yet
 
 ## Known issues ##
 + Memory allocation problem in downloading large files
