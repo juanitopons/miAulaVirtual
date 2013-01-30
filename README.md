@@ -17,7 +17,7 @@ Android version compatibility: 2.0 and onward
 + Students' communities folders: grouping as a unique folder (giving priority to subjects folders)
 + Subjec regex pattern clean and replace (available desactivation through 'Preferences')
 
-## To do - <i>Done</i> ##
+## To do ##
 + Save instance of the activity on screen orientation change
 + Change Android back button functionality: For going hierarchically back in navigation and not to exit the application
 + Add internet 3G, WIFI (not) access exception
@@ -25,7 +25,7 @@ Android version compatibility: 2.0 and onward
 + Add content provider for the opening of documents after download
 + Remove keyboard just after sending the login
 + Check if there is SDCARD. Check SDCARD space before downloading.
-+ <b><i>ListVie</i> Search<b/>
++ <b><i>ListView</i> Search<b/>
 + Clean code
 
 ## Change Log ##
