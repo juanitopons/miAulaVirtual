@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">MiAulaVirtual</string>
+
+    <!--- HOME -->
+    <string name="edit_message">Pon tu mensaje!</string>
+    <string name="user">Usuario UV</string>
+    <string name="pass">Contraseña</string>
+    <string name="button_send">Entrar</string>
+
+	<!--- DOCS -->
+	<string name="mydocs">Mis Documentos</string>
+	<string name="t_docs">Documentos</string>
+
+    <!--- SETTINGS -->
+    <string name="menu_settings">Preferencias</string>
+    <string name="cerrar_sesion">Cerrar Sesión</string>
+    
+    <!--- ACTIVITY -->
+    <string name="newapi">NewApi</string>
+
+</resources>
