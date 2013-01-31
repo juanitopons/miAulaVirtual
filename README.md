@@ -27,6 +27,7 @@ Android version compatibility: 2.0 and onward
 + Check if there is SDCARD. Check SDCARD space before downloading.
 + <b><i>ListView</i> Search<b/>
 + Clean code
++ Add 'cancel' button while downloading
 
 ## Change Log ##
 None yet
