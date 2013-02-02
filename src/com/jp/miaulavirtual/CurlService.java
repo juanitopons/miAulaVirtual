@@ -33,7 +33,7 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 
 public class CurlService extends Service {
-	//Variable a través del ServiceConnection de la Activity
+	//Variable a travï¿½s del ServiceConnection de la Activity
 	
 	//Variables POST
 	String user, pass;
@@ -55,7 +55,7 @@ public class CurlService extends Service {
 	Response res;
 	Context mycontext;
     
-	int i = 0; //Control nº de tareas por servicio 1 = GET || POST 2 = GET cookie vencida, POST, GET.
+	int i = 0; //Control nï¿½ de tareas por servicio 1 = GET || POST 2 = GET cookie vencida, POST, GET.
 	String scookie;
 	Map<String, String> cookies; //Obtener la cookie del cache
 	
@@ -88,6 +88,7 @@ public class CurlService extends Service {
 	    // stopped, so return sticky.
 	    Toast.makeText(this, "Cargando", Toast.LENGTH_SHORT).show();
 	    i = i+1;
+	    Log.d("Document", Boolean.toString(isDocument));
 	    if(isDocument) {
 	    	new docDownload(this).execute();
 	    } else {
@@ -100,12 +101,12 @@ public class CurlService extends Service {
     	docDownload(Context context) {
     		mycontext = context;
     		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
-    	    scookie = prefs.getString("cookies", ""); //¿Existe cookie?
+    	    scookie = prefs.getString("cookies", ""); //ï¿½Existe cookie?
     	    if(scookie!="") {
     	    	Log.d("Cookie", "Cookie string:" + scookie);
     	    	cookies = toMap(scookie); //Si existe cookie la pasamos a MAP para luego procesar el GET con la cookie
     	    }
-    		// ProgressDialog (salta para mostrar el proceso del archivo descargándose)
+    		// ProgressDialog (salta para mostrar el proceso del archivo descargï¿½ndose)
     	}
     	protected String doInBackground(Void... params) {
     		String fileSize = null;
@@ -136,7 +137,7 @@ public class CurlService extends Service {
         protected void onPostExecute(String size) {
         	if(res.cookies().toString().equals("{}")) {
         		startOk3(mycontext, size);
-        	} else if(res.hasCookie("ad_user_login")) { // El usuario y la contraseña son correctas al renovar la COOKIE (NO PUEDEN SER INCORRECTOS, YA ESTABA LOGUEADO)
+        	} else if(res.hasCookie("ad_user_login")) { // El usuario y la contraseï¿½a son correctas al renovar la COOKIE (NO PUEDEN SER INCORRECTOS, YA ESTABA LOGUEADO)
             	Log.d("Cookie", String.valueOf(i));
             	if(i==2) new docDownload(mycontext).execute(); //REejecutamos la tarea docDownload
             } else if(res.hasCookie("ad_session_id")) { // Cookie Vencida
@@ -152,14 +153,13 @@ public class CurlService extends Service {
             }  
         }
     }
-
     
     private class urlConnect extends AsyncTask<Void, Integer, Response> {
     	Boolean isInside;
     	urlConnect(Context context) {
     		mycontext = context;
     		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
-    	    scookie = prefs.getString("cookies", ""); //¿Existe cookie?
+    	    scookie = prefs.getString("cookies", ""); //ï¿½Existe cookie?
     	    if(scookie!="") {
     	    	Log.d("Cookie", "Cookie string:" + scookie);
     	    	cookies = toMap(scookie); //Si existe cookie la pasamos a MAP para luego procesar el GET con la cookie
@@ -197,7 +197,7 @@ public class CurlService extends Service {
         }
 
         protected void onPostExecute(Response response) {
-            if(res.hasCookie("ad_user_login")) { // El usuario y la contraseña son correctas
+            if(res.hasCookie("ad_user_login")) { // El usuario y la contraseï¿½a son correctas
             	Log.d("Cookie", String.valueOf(i));
             	if(i==2) {
             		new urlConnect(mycontext).execute(); //REejecutamos la tarea (GET)
@@ -210,10 +210,10 @@ public class CurlService extends Service {
             	}
             } else if(res.hasCookie("fs_block_id")) { // No tiene "ad_user_login" pero si "fs_block_id" --> Cookie NO vencida
             	startOk2(response, mycontext);
-            } else if(res.hasCookie("ad_session_id")) { // Usuario y contraseña incorrectos. No tiene ni "ad_user_login" ni "fs_block_id"
+            } else if(res.hasCookie("ad_session_id")) { // Usuario y contraseï¿½a incorrectos. No tiene ni "ad_user_login" ni "fs_block_id"
             	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
             	Editor editor = prefs.edit();
-            	if(!isInside) {	// Usuario y contraseña incorrectos en POST
+            	if(!isInside) {	// Usuario y contraseï¿½a incorrectos en POST
 	            		editor.remove("cookies");
 	                	editor.commit();
 	            		Intent bcIntent = new Intent();
@@ -228,7 +228,7 @@ public class CurlService extends Service {
 	                	Log.d("Cookie", "COOKIE VENCIDA");
 	                	new urlConnect(mycontext).execute(); //REejecutamos la tarea (POST)
             	}
-            } else if(res.hasCookie("tupi_style")) { // Cookie correcta, sesión POST ya habilitada. GET correcto. Procede.
+            } else if(res.hasCookie("tupi_style") || res.hasCookie("zen_style")) { // Cookie correcta, sesiï¿½n POST ya habilitada. GET correcto. Procede.
             	startOk2(response, mycontext);
             }
             
@@ -291,7 +291,7 @@ public class CurlService extends Service {
     
 	public void connect() throws IOException {
 		/**
-		 * Chequear si se está logueado (verificar sesión)
+		 * Chequear si se estï¿½ logueado (verificar sesiï¿½n)
 		 * Si NO se esta setData();
 		 * Si se esta...continuar
 		 */
@@ -299,7 +299,7 @@ public class CurlService extends Service {
 			    .data("__confirmed_p", confirm, "__refreshing_p", refresh, "form:id", fm_id, "form:mode", fm_mode, "formbutton:ok", fm_button, "hash", hash, "time", time, "return_url", url, "token_id", token_id, "username", user, "password", pass)
 			    .method(Method.POST)
 			    .execute();
-		res = resp; //IMPORTANTE verificará si el usuario ha logueado o por el contrario ha dado una contraseña o usuario incorrecto(s)
+		res = resp; //IMPORTANTE verificarï¿½ si el usuario ha logueado o por el contrario ha dado una contraseï¿½a o usuario incorrecto(s)
 		cookies = resp.cookies();
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
         Editor editor = prefs.edit();
@@ -318,7 +318,7 @@ public class CurlService extends Service {
 	
 	/**
 	 * Codifica la URL del archivo, lo descarga (si no existe) y lo guarda en Almacenamiento externo (SDCARD)//Android/data/com.jp.miaulavirtual/files
-	 * @return String - Tamaño del archivo en formato del SI
+	 * @return String - Tamaï¿½o del archivo en formato del SI
 	 * @throws IOException
 	 */
     public String getDoc() throws IOException {
@@ -353,7 +353,7 @@ public class CurlService extends Service {
 	    // Se crea el Documento
 	    String name = url.toString().substring(lastSlash + 1);
 	    File file = new File (myDir, name);
-		Long fileSize = Long.parseLong(resp.headers().get("Content-Length")); // tamaño del archivo
+		Long fileSize = Long.parseLong(resp.headers().get("Content-Length")); // tamaï¿½o del archivo
 		
 		// Descargamos el archivo si no existe
 		if (!file.exists ()) { 

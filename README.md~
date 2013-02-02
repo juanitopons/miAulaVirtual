@@ -34,11 +34,11 @@ None yet
 
 ## Known issues ##
 + Memory allocation problem in downloading large files
-+ Error getting resoucerse identifier (Just in few beta testers. I'm working on it)
++ <b>SOLVED: Added support for ZEN style cookie</b> - Error getting resoucerse identifier
 
 ## Upcoming features ##
 + Task management
-+ Cool calendar
++ Cool calendar (?)
 + Webmail integration (?)
 + Remote repository of college notes created by students through the application (?)
 + New activity where student can see a list of already downloaded documents and they have not deleted

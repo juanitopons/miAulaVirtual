@@ -34,7 +34,7 @@ None yet
 
 ## Known issues ##
 + Memory allocation problem in downloading large files
-+ Error getting resoucerse identifier (Just in few beta testers. I'm working on it)
++ <b>SOLVED: <i>Added support for ZEN style cookie</i></b> - Error getting resoucerse identifier
 
 ## Upcoming features ##
 + Task management

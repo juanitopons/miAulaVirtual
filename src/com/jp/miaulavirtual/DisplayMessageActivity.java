@@ -65,7 +65,7 @@ public class DisplayMessageActivity extends Activity {
 	ArrayList<String> onName = new ArrayList<String>();
 	Boolean comunidades = false; // URL principal documentos y comunidades = true -> Carpeta Comunidades url /clubs/; Sino carpeta Principal, url-> /classes/ y otras
 	Boolean isDocument = false; // Maneja si la URL es de tipo Documento (cuando type!= (0, 1)) o tipo URL ya que debemos hacer tareas diferentes para cada uno.
-	int docPosition; // Necesitamos saber la posición del archivo clickeado para poder mandar la URL desde fuera del Listener
+	int docPosition; // Necesitamos saber la posiciÃ³n del archivo clickeado para poder mandar la URL desde fuera del Listener
 	ProgressDialog dialog;
 	
 	// Valores de GET
@@ -126,7 +126,7 @@ public class DisplayMessageActivity extends Activity {
         
         // Actualizamos nombre de LblSubTitulo
         final TextView headerTitle;
-        headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
+        headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Tï¿½tulo Header
         headerTitle.setTextColor(getResources().getColor(R.color.list_title));
         headerTitle.setTypeface(null, 1);
         headerTitle.setText(onName.get(onName.size() - 1));
@@ -150,11 +150,11 @@ public class DisplayMessageActivity extends Activity {
 			e.printStackTrace();
 		}
         
-        first.add(asigsToArray(elements, true, comunidades)); // Añadimos el Array con los  nombres de Carpetas, Asignaturas y Archivos al ArrayList - [0]
+        first.add(asigsToArray(elements, true, comunidades)); // Aï¿½adimos el Array con los  nombres de Carpetas, Asignaturas y Archivos al ArrayList - [0]
         String s[] = urlsToArray(elements, true, comunidades);
-        first.add(s); // Añadimos el Array con las  URLS al ArrayList - [1]
+        first.add(s); // Aï¿½adimos el Array con las  URLS al ArrayList - [1]
         int mysize = s.length;
-        first.add(typeToArray(elements, true, comunidades, mysize)); // Añadimos el Array con los TYPES al ArrayList - [2]
+        first.add(typeToArray(elements, true, comunidades, mysize)); // Aï¿½adimos el Array con los TYPES al ArrayList - [2]
         
         //Copia de FIRST que puede ser borrada
         ArrayList<Object[]> first2 = new ArrayList<Object[]>();
@@ -175,7 +175,7 @@ public class DisplayMessageActivity extends Activity {
             		isDocument = true;
             		docPosition = position;
             		Log.d("TIPO", "DOCUMENTO");
-            		// ProgressDialog (salta para mostrar el proceso del archivo descargándose)
+            		// ProgressDialog (salta para mostrar el proceso del archivo descargï¿½ndose)
             		dialog = new ProgressDialog(mycontext);
             		dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             		dialog.setMessage("Procesando...");
@@ -193,7 +193,7 @@ public class DisplayMessageActivity extends Activity {
 	                } else {
 	                	isHome = false;
 	                }
-	            	//Cuando se hace click en una opción de la lista, queremos borrar todo mientras carga, incluído el título header
+	            	//Cuando se hace click en una opciï¿½n de la lista, queremos borrar todo mientras carga, incluï¿½do el tï¿½tulo header
 	            	headerTitle.setText(null);
 	            	lstAdapter.clearData();
 	            	// Refrescamos View
@@ -204,7 +204,7 @@ public class DisplayMessageActivity extends Activity {
 	            		onUrl.add(first.get(1)[position].toString());
 	            		onName.add(first.get(0)[position].toString());
 	            	} else { 
-	            		if(position==0){ //Click atrás
+	            		if(position==0){ //Click atrï¿½s
 	            			onUrl.remove(onUrl.size() - 1); //Quitamos la URL actual
 	            			onName.remove(onName.size() - 1); //Quitamos el Nombre actual
 	            			comunidades = false;
@@ -280,16 +280,16 @@ public class DisplayMessageActivity extends Activity {
 	        TextView title;
 	        ImageView image;
 	        int ico;
-	        // Título
+	        // Tï¿½tulo
 		    title = (TextView)item.findViewById(R.id.list_title);
 		    String rgxTitle;
 		    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context); // Obtenemos las preferencias
 		    
 		    // Imagen
 		    image = (ImageView)item.findViewById(R.id.folderImage);
-		    Log.d("SWITCH", "Posición " +position+ " Valor: " +data.get(2)[position].toString()+ " Tamaño total: " +String.valueOf(data.get(2).length-1));
+		    Log.d("SWITCH", "Posiciï¿½n " +position+ " Valor: " +data.get(2)[position].toString()+ " Tamaï¿½o total: " +String.valueOf(data.get(2).length-1));
 		    switch(Integer.parseInt(data.get(2)[position].toString())) {
-		    case 0: // Atrás
+		    case 0: // Atrï¿½s
 		    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)|Sgr\\..+?\\s", "" );
 		    	title.setText(rgxTitle.trim());
 		    	ico = getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_back", null, null); // Back ico
@@ -364,11 +364,11 @@ public class DisplayMessageActivity extends Activity {
 	    }
 	}
 	
-	public void afterBroadcaster(String mydoc) { //Método proceso GET
+	public void afterBroadcaster(String mydoc) { //Mï¿½todo proceso GET
 		Boolean isHome;
 		
 		// Actualizamos nombre de LblSubTitulo;
-		TextView headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
+		TextView headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Tï¿½tulo Header
 		headerTitle.setTextColor(getResources().getColor(R.color.list_title));
         headerTitle.setTypeface(null, 1);
         headerTitle.setText(onName.get(onName.size() - 1));
@@ -456,9 +456,9 @@ public class DisplayMessageActivity extends Activity {
         Log.d(tag, "In the onRestart() event");
         
         /**
-         * Comprobar si tiene conexión a Internet.
-         * Tiene conexión: Actualizar
-         * No tiene conexión: Mensaje "No existe conexión a internet"
+         * Comprobar si tiene conexiï¿½n a Internet.
+         * Tiene conexiï¿½n: Actualizar
+         * No tiene conexiï¿½n: Mensaje "No existe conexiï¿½n a internet"
          */
     }
     
@@ -494,14 +494,14 @@ public class DisplayMessageActivity extends Activity {
 
 	
     /**
-     * Acción para cada Item del Menu
+     * Acciï¿½n para cada Item del Menu
      */
     public boolean onOptionsItemSelected(MenuItem item){
-        /*El switch se encargará de gestionar cada elemento del menú dependiendo de su id,
-        por eso dijimos antes que ningún id de los elementos del menú podia ser igual.
+        /*El switch se encargarï¿½ de gestionar cada elemento del menï¿½ dependiendo de su id,
+        por eso dijimos antes que ningï¿½n id de los elementos del menï¿½ podia ser igual.
         */
         switch(item.getItemId()){
-        case R.id.preferencias: //Nombre del id del menú, para combrobar que se ha pulsado
+        case R.id.preferencias: //Nombre del id del menï¿½, para combrobar que se ha pulsado
         	Log.d(tag, "Preferencias");
         	startActivity(new Intent(this, SettingsActivity.class));;
         	break;
@@ -557,16 +557,16 @@ public class DisplayMessageActivity extends Activity {
 			}
 		} else if(comun) {
 			elem = melem.select("td[headers=contents_name] a[href*=/clubs/], td[headers=folders_name] a[href*=/clubs/]"); //Nombre Asignaturas String "Comunuidades"
-			s = new String[elem.size()+1]; //comunidades + 1(atrás)
-			s[0] = "Atrás " + onName.get(onName.size() - 2);
+			s = new String[elem.size()+1]; //comunidades + 1(atrï¿½s)
+			s[0] = "Atrï¿½s " + onName.get(onName.size() - 2);
 			for(Element el : elem){
 			    s[i] = el.text();
 			    i++;
 			}
 		} else {
 			elem = melem.select("td[headers=contents_name] a[href], td[headers=folders_name] a[href]"); //Nombre Asignaturas String 
-			s = new String[elem.size()+1]; //todo + 1 (atrás)
-			s[0] = "Atrás " + onName.get(onName.size() - 2);
+			s = new String[elem.size()+1]; //todo + 1 (atrï¿½s)
+			s[0] = "Atrï¿½s " + onName.get(onName.size() - 2);
 			for(Element el : elem){
 			    s[i] = el.text();
 			    i++;
@@ -618,7 +618,7 @@ public class DisplayMessageActivity extends Activity {
 			s = new String[size];
 			s[0] = "6";	
 			while(i<size) {
-				Log.d("get(type)", i+"  Tamaño: " +size);
+				Log.d("get(type)", i+"  Tamaï¿½o: " +size);
 				s[i] = "1";
 				i++;
 			}
@@ -659,7 +659,10 @@ public class DisplayMessageActivity extends Activity {
         	cURL.user = user;
         	cURL.pass = pass;
         	cURL.url = onUrl.get(onUrl.size() - 1);
-        	if(isDocument) cURL.url = first.get(1)[docPosition].toString();
+        	if(isDocument) 
+        		{
+        		cURL.url = first.get(1)[docPosition].toString();
+        		}
         	cURL.isDocument = isDocument;
             startService(i);
             Log.d("Service", "Servicio Conectado");
