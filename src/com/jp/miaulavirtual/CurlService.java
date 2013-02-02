@@ -1,10 +1,17 @@
 package com.jp.miaulavirtual;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -50,6 +57,8 @@ public class CurlService extends Service {
 	public final static String RESPONSE = "com.jp.miaulavirtual.RESPONSE";
 	
 	Boolean isDocument; // Queremos saber si la URL es un Documento (tarea docDownload) o no (tarea urlConnect)
+	String url_back;
+	ProgressDialog pdialog;
 	
 	//Respuesta
 	Response res;
@@ -97,7 +106,7 @@ public class CurlService extends Service {
 	    return START_STICKY;
     }
     
-    private class docDownload extends AsyncTask<Void, Integer, String> {
+    private class docDownload extends AsyncTask<Void, Integer, Void> {
     	docDownload(Context context) {
     		mycontext = context;
     		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
@@ -108,12 +117,11 @@ public class CurlService extends Service {
     	    }
     		// ProgressDialog (salta para mostrar el proceso del archivo descarg�ndose)
     	}
-    	protected String doInBackground(Void... params) {
-    		String fileSize = null;
+    	protected Void doInBackground(Void... params) {
     		try {
             	if(cookies != null) {
             		Log.d("Document", "getDoc AHORA");
-            		fileSize = getDoc();
+            		getDoc(mycontext);
             		Log.d("Cookie", "HAY COOKIE!");
             	} else {
             		setData();
@@ -123,8 +131,7 @@ public class CurlService extends Service {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-            publishProgress(100);
-            return fileSize;
+            return null;
         }
     	
         protected void onProgressUpdate(Integer... progress) {
@@ -134,23 +141,16 @@ public class CurlService extends Service {
                 String.valueOf(progress[0]) + "% scrapped",
                 Toast.LENGTH_LONG).show(); **/
         }
+        protected void onPreExecute() {
+        	// ProgressDialog (salta para mostrar el proceso del archivo descarg�ndose)
+    		pdialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+    		pdialog.setMessage("Procesando...");
+            pdialog.setCancelable(true);
+            pdialog.setMax(100);
+	        pdialog.show();
+        }
         protected void onPostExecute(String size) {
-        	if(res.cookies().toString().equals("{}")) {
-        		startOk3(mycontext, size);
-        	} else if(res.hasCookie("ad_user_login")) { // El usuario y la contrase�a son correctas al renovar la COOKIE (NO PUEDEN SER INCORRECTOS, YA ESTABA LOGUEADO)
-            	Log.d("Cookie", String.valueOf(i));
-            	if(i==2) new docDownload(mycontext).execute(); //REejecutamos la tarea docDownload
-            } else if(res.hasCookie("ad_session_id")) { // Cookie Vencida
-            	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
-            	Editor editor = prefs.edit();
-            	// Cookie Vencida
-                editor.remove("cookies");
-                editor.commit();
-                cookies = null; // eliminamos la cookie
-                i = i+1; // Aumentamos el contador
-                Log.d("Cookie", "COOKIE VENCIDA");
-                new docDownload(mycontext).execute(); //REejecutamos la tarea (POST)
-            }  
+        	
         }
     }
     
@@ -321,7 +321,7 @@ public class CurlService extends Service {
 	 * @return String - Tama�o del archivo en formato del SI
 	 * @throws IOException
 	 */
-    public String getDoc() throws IOException {
+    public void getDoc(Context mycontext) throws IOException {
     	URI uri;
     	Log.d("Document", url);
     	String request = null;
@@ -338,36 +338,141 @@ public class CurlService extends Service {
 			e.printStackTrace();
 		}
     	Log.d("Document", request);
-    	Response resp = Jsoup.connect(request).cookies(cookies).method(Method.GET).ignoreContentType(true).execute();
-    	Log.d("Document", resp.statusMessage());
+    	Log.d("Document", url_back);
+    	Response resp = Jsoup.connect("https://aulavirtual.uv.es"+ url_back).cookies(cookies).method(Method.GET).execute();
     	res = resp;
-		
-		// Guardamos nuestro documento
-		int lastSlash = url.toString().lastIndexOf('/');
-		
-		// Se crea el directorio
-		String root = Environment.getExternalStorageDirectory().toString();
-	    File myDir = new File(root + "/Android/data/com.jp.miaulavirtual/files");    
-	    myDir.mkdirs();
-	    
-	    // Se crea el Documento
-	    String name = url.toString().substring(lastSlash + 1);
-	    File file = new File (myDir, name);
-		Long fileSize = Long.parseLong(resp.headers().get("Content-Length")); // tama�o del archivo
-		
-		// Descargamos el archivo si no existe
-		if (!file.exists ()) { 
-			try {
-				Log.d("Document", "descargando...");
-				FileOutputStream fos = new FileOutputStream(file);
-				fos.write(resp.bodyAsBytes());
-				fos.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return humanReadableByteCount(fileSize, true);
+    	Log.d("Document", "Respuesta2");
+    		/**
+    		// Guardamos nuestro documento
+    		lastSlash = url.toString().lastIndexOf('/');
+    		
+    		// Se crea el directorio
+    		String root = Environment.getExternalStorageDirectory().toString();
+    	    File myDir = new File(root + "/Android/data/com.jp.miaulavirtual/files");    
+    	    myDir.mkdirs();
+    	    
+    	    // Se crea el Documento
+    	    String name = url.toString().substring(lastSlash + 1);
+    	    File file = new File (myDir, name);
+    		
+    		// Descargamos el archivo si no existe
+    		if (!file.exists ()) { 
+    			try {
+    				Log.d("Document", "descargando...");
+    				
+    				final int BUFFER_SIZE = 23 * 1024;
+    				InputStream is = new ByteArrayInputStream(bytes);
+    				BufferedInputStream bis = new BufferedInputStream(is, BUFFER_SIZE);
+    				
+    				FileOutputStream fos = new FileOutputStream(file);
+    				byte[] baf = new byte[BUFFER_SIZE];
+    				int actual = 0;
+    				while (actual != -1) {
+    				    fos.write(baf, 0, actual);
+    				    actual = bis.read(baf, 0, BUFFER_SIZE);
+    				}
+
+    				fos.close();
+    			} catch (Exception e) {
+    				e.printStackTrace();
+    			}
+    		}	
+    		startOk3(mycontext, "Descargado"); **/
+    	if(res.hasCookie("ad_user_login")) { // El usuario y la contrase�a son correctas al renovar la COOKIE (NO PUEDEN SER INCORRECTOS, YA ESTABA LOGUEADO)
+        	Log.d("Cookie", String.valueOf(i));
+        	if(i==2) new docDownload(mycontext).execute(); //REejecutamos la tarea docDownload
+    	} else if(res.hasCookie("fs_block_id")) {
+    		downloadFile(mycontext, request);  
+        } else if(res.hasCookie("ad_session_id")) { // Cookie Vencida
+        	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
+        	Editor editor = prefs.edit();
+        	// Cookie Vencida
+            editor.remove("cookies");
+            editor.commit();
+            cookies = null; // eliminamos la cookie
+            i = i+1; // Aumentamos el contador
+            Log.d("Cookie", "COOKIE VENCIDA");
+            new docDownload(mycontext).execute(); //REejecutamos la tarea (POST)
+        } else if(res.hasCookie("tupi_style") || res.hasCookie("zen_style")) { // Cookie correcta, sesi�n POST ya habilitada. GET correcto. Procede.
+        	downloadFile(mycontext, request);
+        }
     }
+    
+    public void downloadFile(Context mycontext, String request) {
+    	URL url2;
+	    URLConnection conn;
+	    int lastSlash;
+	    Long fileSize;
+	    BufferedInputStream inStream;
+	    BufferedOutputStream outStream;
+	    FileOutputStream fileStream;
+	    String cookies = cookieFormat(scookie);
+	    final int BUFFER_SIZE = 23 * 1024;
+		
+		
+		Log.d("Document", "2ª respueesta");
+	    try
+	    {
+    		// Guardamos nuestro documento
+    		lastSlash = url.toString().lastIndexOf('/');
+    		
+    		// Se crea el directorio
+    		String root = Environment.getExternalStorageDirectory().toString();
+    	    File myDir = new File(root + "/Android/data/com.jp.miaulavirtual/files");    
+    	    myDir.mkdirs();
+    	    
+    	    // Se crea el Documento
+    	    String name = url.toString().substring(lastSlash + 1);
+    	    File file = new File (myDir, name);
+    	    
+	        // Empezamos la conexión con COOKIES (ya hemos verificado que las cookies no están vencida y que son usables)
+    	    url2 = new URL(request);
+	        conn = url2.openConnection();
+	        conn.setUseCaches(false);
+	        conn.setRequestProperty("Cookie", cookies);
+	        fileSize = (long) conn.getContentLength();
+	        
+	        // Empieza la descarga
+	        inStream = new BufferedInputStream(conn.getInputStream());
+	        fileStream = new FileOutputStream(file);
+	        outStream = new BufferedOutputStream(fileStream, BUFFER_SIZE);
+	        byte[] data = new byte[BUFFER_SIZE];
+	        int bytesRead = 0, totalRead = 0;
+	        int increment;
+	        int setMax = (conn.getContentLength()/1024);
+	        pdialog.setMax(setMax);
+	        increment = (int)(setMax/conn.getContentLength());
+	        Log.d("Document", String.valueOf(increment));
+	        int i = 0;
+	        while((bytesRead = inStream.read(data, 0, data.length)) >= 0)
+	        {
+	            outStream.write(data, 0, bytesRead);
+	            // update progress bar
+	            totalRead += bytesRead;
+	            i++;
+	            Log.d("Document", String.valueOf(bytesRead));
+	            pdialog.incrementProgressBy((int)(bytesRead/1024));
+	        }
+	 
+	        outStream.close();
+	        fileStream.close();
+	        inStream.close();
+	 
+	        /**if(isInterrupted())
+	        {
+	            // the download was canceled, so let's delete the partially downloaded file
+	            outFile.delete();
+	        }
+	        else
+	        { **/
+	            // notify completion
+	        	startOk3(mycontext, humanReadableByteCount(fileSize, true));
+	    } catch(Exception e)
+	    {
+	    	
+	    }
+    }
+    	
 	
     /**
      * Pasa cookies en formato String {cookies} a Map que es el formato utilizado poara insertar cookies por JSoup
@@ -384,6 +489,18 @@ public class CurlService extends Service {
 			//i++;
 			i=i+2;
 		}
+		return cookies;
+	}
+	
+	public String cookieFormat(String scookie) {
+		String [] arrayc = scookie.split(" *[=,^{}$] *");
+		String cookies ="";
+		for(int a = 1; a<(int)arrayc.length; a++) {
+			System.out.println(arrayc[a]);
+			cookies += arrayc[a]+"="+arrayc[a+1]+"; ";
+			a = a+1;
+		}
+		cookies = cookies.trim();
 		return cookies;
 	}
 	

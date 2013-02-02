@@ -28,7 +28,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -177,11 +176,6 @@ public class DisplayMessageActivity extends Activity {
             		Log.d("TIPO", "DOCUMENTO");
             		// ProgressDialog (salta para mostrar el proceso del archivo descarg�ndose)
             		dialog = new ProgressDialog(mycontext);
-            		dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            		dialog.setMessage("Procesando...");
-                    dialog.setCancelable(true);
-                    dialog.setMax(100);
-                    dialog.show();
                     
             		// Servicio para la descarga del archivo
             		i = new Intent(mycontext, CurlService.class);
@@ -662,6 +656,8 @@ public class DisplayMessageActivity extends Activity {
         	if(isDocument) 
         		{
         		cURL.url = first.get(1)[docPosition].toString();
+        		cURL.url_back = onUrl.get(onUrl.size() - 2);
+        		cURL.pdialog = dialog;
         		}
         	cURL.isDocument = isDocument;
             startService(i);

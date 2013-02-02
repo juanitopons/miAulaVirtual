@@ -33,7 +33,7 @@ Android version compatibility: 2.0 and onward
 None yet
 
 ## Known issues ##
-+ Memory allocation problem in downloading large files
++ <b>SOLVED: <i>Buffered download</i></b> - Memory allocation problem in downloading large files
 + <b>SOLVED: <i>Added support for ZEN style cookie</i></b> - Error getting resoucerse identifier
 
 ## Upcoming features ##
