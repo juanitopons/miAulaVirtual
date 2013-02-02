@@ -84,16 +84,16 @@ public class DisplayMessageActivity extends Activity {
 	    public void onReceive(Context context, Intent intent) {
 	        if (intent.getAction().equals(CurlService.RESPONSE)) {
 	        		fServ = intent.getStringExtra("response");
-	        		if(fServ.equals("continue")) {
-	        			String size =  intent.getStringExtra("size");
+	        		if(fServ.equals("cont")) {
 	        			dialog.dismiss();
+	        			String size =  intent.getStringExtra("data");
 	        			isDocument = false;
 	        			Toast.makeText(getBaseContext(),"Descarga finalizada, "+size+ " descargados.", Toast.LENGTH_LONG).show();
-	        		} else if(fServ.equals("cancelled")) {
+	        		} else if(fServ.equals("oops")) {
 	        			dialog.dismiss();
 	        			isDocument = false;
-	        			Toast.makeText(getBaseContext(),"Descarga Cancelada!", Toast.LENGTH_LONG).show();
-	        			dialog.dismiss();
+	        			String msg =  intent.getStringExtra("data");
+	        			Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show();
 	        		} else {
 		        		afterBroadcaster(fServ);
 		        		Toast.makeText(getBaseContext(),"GET hecho!", Toast.LENGTH_LONG).show();
@@ -552,7 +552,7 @@ public class DisplayMessageActivity extends Activity {
 		} else if(comun) {
 			elem = melem.select("td[headers=contents_name] a[href*=/clubs/], td[headers=folders_name] a[href*=/clubs/]"); //Nombre Asignaturas String "Comunuidades"
 			s = new String[elem.size()+1]; //comunidades + 1(atr�s)
-			s[0] = "Atr�s " + onName.get(onName.size() - 2);
+			s[0] = "Atrás " + onName.get(onName.size() - 2);
 			for(Element el : elem){
 			    s[i] = el.text();
 			    i++;
@@ -560,7 +560,7 @@ public class DisplayMessageActivity extends Activity {
 		} else {
 			elem = melem.select("td[headers=contents_name] a[href], td[headers=folders_name] a[href]"); //Nombre Asignaturas String 
 			s = new String[elem.size()+1]; //todo + 1 (atr�s)
-			s[0] = "Atr�s " + onName.get(onName.size() - 2);
+			s[0] = "Atrás " + onName.get(onName.size() - 2);
 			for(Element el : elem){
 			    s[i] = el.text();
 			    i++;
@@ -641,6 +641,7 @@ public class DisplayMessageActivity extends Activity {
 		Log.d("typeToArray", String.valueOf(size));
 		return s;
 	}
+	
 
     /** Defines callbacks for service binding, passed to bindService() */
     ServiceConnection CurlConnection = new ServiceConnection() {

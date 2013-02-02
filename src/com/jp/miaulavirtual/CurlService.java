@@ -59,6 +59,7 @@ public class CurlService extends Service {
 	Boolean isDocument; // Queremos saber si la URL es un Documento (tarea docDownload) o no (tarea urlConnect)
 	String url_back;
 	ProgressDialog pdialog;
+	Boolean task_status = true;
 	
 	//Respuesta
 	Response res;
@@ -147,8 +148,18 @@ public class CurlService extends Service {
     		pdialog.setMessage("Procesando...");
             pdialog.setCancelable(true);
             pdialog.setMax(100);
+            pdialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancelar",
+            		new DialogInterface.OnClickListener() {
+            		public void onClick(DialogInterface dialog,
+            		int whichButton)
+            		{
+            		task_status = false;
+            		}
+            		});
 	        pdialog.show();
         }
+        
+        
         protected void onPostExecute(String size) {
         	
         }
@@ -264,11 +275,12 @@ public class CurlService extends Service {
         sendBroadcast(bcIntent);
     	}
     
-    private void startOk3(Context context, String size) {
+    private void startOk3(Context context, String data, Boolean status) {
     	Intent bcIntent = new Intent();
         bcIntent.setAction(RESPONSE);
-        bcIntent.putExtra("size", size);
-        bcIntent.putExtra("response", "continue");
+        bcIntent.putExtra("data", data);
+        if(status) bcIntent.putExtra("response", "cont");
+        if(!status) bcIntent.putExtra("response", "oops");
         sendBroadcast(bcIntent);
     	}
     
@@ -406,73 +418,85 @@ public class CurlService extends Service {
 	    BufferedInputStream inStream;
 	    BufferedOutputStream outStream;
 	    FileOutputStream fileStream;
-	    String cookies = cookieFormat(scookie);
+	    String cookies = cookieFormat(scookie); // format cookie for URL setRequestProperty
 	    final int BUFFER_SIZE = 23 * 1024;
-		
+	    int id = 1;
 		
 		Log.d("Document", "2ª respueesta");
 	    try
 	    {
-    		// Guardamos nuestro documento
+    		// Just resources
     		lastSlash = url.toString().lastIndexOf('/');
     		
-    		// Se crea el directorio
+    		// Directory creation
     		String root = Environment.getExternalStorageDirectory().toString();
     	    File myDir = new File(root + "/Android/data/com.jp.miaulavirtual/files");    
     	    myDir.mkdirs();
     	    
-    	    // Se crea el Documento
+    	    // Document creation
     	    String name = url.toString().substring(lastSlash + 1);
     	    File file = new File (myDir, name);
+    	    fileSize = (long) file.length();
     	    
-	        // Empezamos la conexión con COOKIES (ya hemos verificado que las cookies no están vencida y que son usables)
-    	    url2 = new URL(request);
-	        conn = url2.openConnection();
-	        conn.setUseCaches(false);
-	        conn.setRequestProperty("Cookie", cookies);
-	        fileSize = (long) conn.getContentLength();
-	        
-	        // Empieza la descarga
-	        inStream = new BufferedInputStream(conn.getInputStream());
-	        fileStream = new FileOutputStream(file);
-	        outStream = new BufferedOutputStream(fileStream, BUFFER_SIZE);
-	        byte[] data = new byte[BUFFER_SIZE];
-	        int bytesRead = 0, totalRead = 0;
-	        int increment;
-	        int setMax = (conn.getContentLength()/1024);
-	        pdialog.setMax(setMax);
-	        increment = (int)(setMax/conn.getContentLength());
-	        Log.d("Document", String.valueOf(increment));
-	        int i = 0;
-	        while((bytesRead = inStream.read(data, 0, data.length)) >= 0)
-	        {
-	            outStream.write(data, 0, bytesRead);
-	            // update progress bar
-	            totalRead += bytesRead;
-	            i++;
-	            Log.d("Document", String.valueOf(bytesRead));
-	            pdialog.incrementProgressBy((int)(bytesRead/1024));
-	        }
-	 
-	        outStream.close();
-	        fileStream.close();
-	        inStream.close();
-	 
-	        /**if(isInterrupted())
-	        {
-	            // the download was canceled, so let's delete the partially downloaded file
-	            outFile.delete();
-	        }
-	        else
-	        { **/
-	            // notify completion
-	        	startOk3(mycontext, humanReadableByteCount(fileSize, true));
+    	    // Check if we have already downloaded the whole file
+    	    if (file.exists ()) {
+    	    	pdialog.setProgress(100); // full progress if file already donwloaded
+    	    } else {
+		        // Start the connection with COOKIES (we already verified that the cookies aren't expired and we can use them)
+	    	    url2 = new URL(request);
+		        conn = url2.openConnection();
+		        conn.setUseCaches(false);
+		        conn.setRequestProperty("Cookie", cookies);
+		        fileSize = (long) conn.getContentLength();
+		        
+		        // Check if we have necesary space
+		        if(fileSize >= myDir.getUsableSpace()) { task_status = false; id = 2;
+		        } else {
+		        	
+			        // Start downloading
+			        inStream = new BufferedInputStream(conn.getInputStream());
+			        fileStream = new FileOutputStream(file);
+			        outStream = new BufferedOutputStream(fileStream, BUFFER_SIZE);
+			        byte[] data = new byte[BUFFER_SIZE];
+			        int bytesRead = 0;
+			        int setMax = (conn.getContentLength()/1024);
+			        pdialog.setMax(setMax);
+		
+			        while(task_status && (bytesRead = inStream.read(data, 0, data.length)) >= 0)
+			        {
+			            outStream.write(data, 0, bytesRead);
+			            // update progress bar
+			            pdialog.incrementProgressBy((int)(bytesRead/1024));
+			        }
+			        
+			        // Delete archive if cancel pressed
+			        if(!task_status) file.delete(); id=0;
+			        
+			        // Close stream
+			        outStream.close();
+			        fileStream.close();
+			        inStream.close();
+		        }
+    	    }
+    	    
+    	    // notify completion
+    	    switch(id) {
+    	    case 0: // cancelled
+    	    	startOk3(mycontext, "¡Descarga cancelada!", task_status);
+    	    	break;
+    	    case 1: // OK
+    	    	startOk3(mycontext, humanReadableByteCount(fileSize, true), task_status);
+    	    	break;
+    	    	
+    	    case 2: // not enought free storage space
+    	    	startOk3(mycontext, "Espacio insuficiente en la tarjeta de memoria", task_status);
+    	    	break;
+    	    }  
 	    } catch(Exception e)
 	    {
 	    	
 	    }
-    }
-    	
+    }	
 	
     /**
      * Pasa cookies en formato String {cookies} a Map que es el formato utilizado poara insertar cookies por JSoup
