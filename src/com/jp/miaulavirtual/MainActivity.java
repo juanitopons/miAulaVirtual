@@ -22,14 +22,23 @@ import android.util.Log;
 
 
 public class MainActivity extends Activity {
+	
+    // flag for Internet connection status
+    Boolean isInternetPresent = false;
+    // Connection detector class
+    ConnectionDetector cd;
+	
+	// Service
 	CurlService cURL;
 	Intent i;
 	
+	// User data
 	String user;
 	String pass;
 	String url;
 	
 	String tag = "Lifecycle";
+	// Receiver from service
 	private DataUpdateReceiver dataUpdateReceiver;
 	
 	//BroadcastReceiver, recibe variables de nuestro servicio posteriormente ejecutado CurlService
@@ -40,7 +49,7 @@ public class MainActivity extends Activity {
 	        	boolean logged = intent.getBooleanExtra("logged", true);
 	        	if(!logged) { 
 	        		setContentView(R.layout.activity_main); 
-	        		Toast.makeText(getBaseContext(),"Usuario o contraseña incorrectos", Toast.LENGTH_LONG).show();
+	        		Toast.makeText(getBaseContext(),"Usuario o contraseï¿½a incorrectos", Toast.LENGTH_LONG).show();
 	        		stopService(i);
 	        		unbindService(CurlConnection);
 	        	} else {
@@ -56,36 +65,46 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Set the user interface layout for this Activity
-        // The layout file is defined in the project res/layout/main_activity.xml file
+        // creating connection detector class instance
+        cd = new ConnectionDetector(getApplicationContext());
+        isInternetPresent = cd.isConnectingToInternet();
+        
+        // SharedPreference instance
         PreferenceManager.setDefaultValues(this, R.xml.apppreferences, false);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         
-        Editor editor = prefs.edit(); //eliminamos la cookie
-    	editor.remove("cookies"); //ELIMINAMOS LA COOKIE DE LA PASADA VEZ
+        // Just in case...we delete the cookie, again.
+        Editor editor = prefs.edit();
+    	editor.remove("cookies");
     	editor.commit();
         
+    	// Getting user data
         user = prefs.getString("myuser", "Ninguno");
         pass = prefs.getString("mypass", "Ninguno");
         url = "/dotlrn/?page_num=2";
        
-        if(user!="Ninguno" && user!=""){ //Si el usuario entra a la aplicación y ya está logueado
-        	setContentView(R.layout.activity_main2); //Content si está logueado - Loader mientras espera el scrap
+        if(user!="Ninguno" && user!=""){ //Si el usuario entra a la aplicaciÃ³n y ya estÃ¡ logueado
+        	setContentView(R.layout.activity_main2); //Content si estÃ¡ logueado - Loader mientras espera el scrap
         	
         	Log.d("DATOS", user);
             Log.d("DATOS", pass);
-        	i = new Intent(this, CurlService.class);
-            bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); //conectamos el servicio
+            
+            if(isInternetPresent) {
+	        	i = new Intent(this, CurlService.class);
+	            bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); //conectamos el servicio
+            } else {
+            	setContentView(R.layout.activity_main);
+            	Toast.makeText(getBaseContext(),"Oops..! No existe conexiÃ³n a Internet.", Toast.LENGTH_LONG).show();
+            }
 
         	/** String [] user_data;
         	user_data = new String[2];
         	user_data[0] = user;
         	user_data[1] = pass;
         	
-        	intent.putExtra(USER_DATA, user_data); //message = qué mostrar en la nueva actividad al pulsar el boton de "Login" **/
-        	
+        	intent.putExtra(USER_DATA, user_data); //message = quÃ© mostrar en la nueva actividad al pulsar el boton de "Login" **/
         } else {
-        setContentView(R.layout.activity_main); //Content si no está logueado
+        setContentView(R.layout.activity_main); //Content si no estÃ¡ logueado
         }
         Log.d(tag, "In the onCreate() event");
         if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
@@ -102,14 +121,14 @@ public class MainActivity extends Activity {
     }
     
     /**
-     * Acción para cada Item del Menu
+     * Acciï¿½n para cada Item del Menu
      */
     public boolean onOptionsItemSelected(MenuItem item){
-        /*El switch se encargará de gestionar cada elemento del menú dependiendo de su id,
-        por eso dijimos antes que ningún id de los elementos del menú podia ser igual.
+        /*El switch se encargarï¿½ de gestionar cada elemento del menï¿½ dependiendo de su id,
+        por eso dijimos antes que ningï¿½n id de los elementos del menï¿½ podia ser igual.
         */
         switch(item.getItemId()){
-        case R.id.preferencias: //Nombre del id del menú, para combrobar que se ha pulsado
+        case R.id.preferencias: //Nombre del id del menï¿½, para combrobar que se ha pulsado
         	Log.d(tag, "Preferencias");
         	startActivity(new Intent(this, SettingsActivity.class));;
         }
@@ -157,36 +176,40 @@ public class MainActivity extends Activity {
     /** Llamada cuando el usuario hace clic en 'Enviar' */
     public void sendMessage(View view) {
     	/**
-         * Habrá que guardar el Usuario y Contraseña si es la primera vez que loguea (es la primera vez que loguea porque se envia el SEND.
+         * Habrï¿½ que guardar el Usuario y Contraseï¿½a si es la primera vez que loguea (es la primera vez que loguea porque se envia el SEND.
          * 
          */
-    	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Editor editor = prefs.edit();
-        EditText tuser = (EditText) findViewById(R.id.user);
-    	EditText tpass = (EditText) findViewById(R.id.pass);
-    	//Incertamos el usuario y la contraseña en las preferencias
-        editor.putString("myuser", tuser.getText().toString());
-        editor.putString("mypass", tpass.getText().toString());
-        editor.commit();
-    	
-        //El usuario ha logueado, ponemos la pantalla de carga
-        setContentView(R.layout.activity_main2);
-        
-        //Actualizamos el usuario y contraseña
-        user = tuser.getText().toString();
-        pass = tpass.getText().toString();
-        url = "/dotlrn/?page_num=2";
-        
-        Log.d("DATOS2", user);
-        Log.d("DATOS2", pass);
-        
-        //Iniciamos el servicio de Scrap
-        i = new Intent(this, CurlService.class);
-        bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); //conectamos el servicio
-        
-        if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
-        IntentFilter intentFilter = new IntentFilter(CurlService.LOGGED);
-        registerReceiver(dataUpdateReceiver, intentFilter);
+    	if(isInternetPresent) {
+	    	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+	        Editor editor = prefs.edit();
+	        EditText tuser = (EditText) findViewById(R.id.user);
+	    	EditText tpass = (EditText) findViewById(R.id.pass);
+	    	//Incertamos el usuario y la contraseï¿½a en las preferencias
+	        editor.putString("myuser", tuser.getText().toString());
+	        editor.putString("mypass", tpass.getText().toString());
+	        editor.commit();
+	    	
+	        //El usuario ha logueado, ponemos la pantalla de carga
+	        setContentView(R.layout.activity_main2);
+	        
+	        //Actualizamos el usuario y contraseï¿½a
+	        user = tuser.getText().toString();
+	        pass = tpass.getText().toString();
+	        url = "/dotlrn/?page_num=2";
+	        
+	        Log.d("DATOS2", user);
+	        Log.d("DATOS2", pass);
+	        
+	        // Iniciamos el servicio de Scrap
+	        i = new Intent(this, CurlService.class);
+	        bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); //conectamos el servicio
+	        
+	        if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
+	        IntentFilter intentFilter = new IntentFilter(CurlService.LOGGED);
+	        registerReceiver(dataUpdateReceiver, intentFilter);
+    	} else {
+    		Toast.makeText(getBaseContext(),"Oops..! No existe conexiÃ³n a Internet.", Toast.LENGTH_LONG).show();
+    	}
     }
 
     /** Defines callbacks for service binding, passed to bindService() */

@@ -45,11 +45,22 @@ import android.widget.Toast;
 
 
 public class DisplayMessageActivity extends Activity {
+
+    // flag for Internet connection status
+    Boolean isInternetPresent = false;
+    // Connection detector class
+    ConnectionDetector cd;
+	
+	// Service
 	CurlService cURL; //Servicio
 	Intent i;
+	
+	// Activity
 	Context mycontext;
 	
 	String tag = "Lifecycle2";
+	
+	// User data
 	String user;
 	String pass;
 	
@@ -67,12 +78,7 @@ public class DisplayMessageActivity extends Activity {
 	int docPosition; // Necesitamos saber la posición del archivo clickeado para poder mandar la URL desde fuera del Listener
 	ProgressDialog dialog;
 	
-	// Valores de GET
-	//Document doc2;
-	//Elements elements2;
-	//String fServ2; //Siguientes respuestas
-	//ArrayList<Object[]> second = new ArrayList<Object[]>();
-	
+	// Interface
 	ListView lstDocs;
 	AdaptadorDocs lstAdapter;
 	
@@ -88,7 +94,7 @@ public class DisplayMessageActivity extends Activity {
 	        			dialog.dismiss();
 	        			String size =  intent.getStringExtra("data");
 	        			isDocument = false;
-	        			Toast.makeText(getBaseContext(),"Descarga finalizada, "+size+ " descargados.", Toast.LENGTH_LONG).show();
+	        			Toast.makeText(getBaseContext(),"Descarga finalizada, "+size+ " descargados.", Toast.LENGTH_SHORT).show();
 	        		} else if(fServ.equals("oops")) {
 	        			dialog.dismiss();
 	        			isDocument = false;
@@ -96,7 +102,7 @@ public class DisplayMessageActivity extends Activity {
 	        			Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show();
 	        		} else {
 		        		afterBroadcaster(fServ);
-		        		Toast.makeText(getBaseContext(),"GET hecho!", Toast.LENGTH_LONG).show();
+		        		Toast.makeText(getBaseContext(),"GET hecho!", Toast.LENGTH_SHORT).show();
 	        		}
 	        		stopService(i);
 	        		unbindService(CurlConnection);
@@ -117,6 +123,10 @@ public class DisplayMessageActivity extends Activity {
         }
 
         Log.d(tag, "In the onCreate() event");
+        
+        // creating connection detector class instance
+        cd = new ConnectionDetector(getApplicationContext());
+        isInternetPresent = cd.isConnectingToInternet();
         
         // Datos por defecto de la primera respuesta
         mycontext = this;
@@ -169,49 +179,52 @@ public class DisplayMessageActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> a, View v, int position, long id) { //Al clicar X item de la lista
             	Boolean isHome;
-            	Log.d("Type length", String.valueOf(first.get(2)[0])+" Posicion: "+String.valueOf(position));
-            	if(!(first.get(2)[position].toString().equals("0")) && !(first.get(2)[position].toString().equals("1")) && !(first.get(2)[position].toString().equals("6"))) {
-            		isDocument = true;
-            		docPosition = position;
-            		Log.d("TIPO", "DOCUMENTO");
-            		// ProgressDialog (salta para mostrar el proceso del archivo descarg�ndose)
-            		dialog = new ProgressDialog(mycontext);
-                    
-            		// Servicio para la descarga del archivo
-            		i = new Intent(mycontext, CurlService.class);
-	                bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); // Conectamos el servicio
-            	} else {
-            		isDocument = false;
-	            	if(onUrl.get(onUrl.size() - 1) == "/dotlrn/?page_num=2" && !comunidades){
-	                	isHome = true;
-	                } else {
-	                	isHome = false;
-	                }
-	            	//Cuando se hace click en una opci�n de la lista, queremos borrar todo mientras carga, inclu�do el t�tulo header
-	            	headerTitle.setText(null);
-	            	lstAdapter.clearData();
-	            	// Refrescamos View
-	            	lstAdapter.notifyDataSetChanged();
-	            	lstDocs.setDividerHeight(0);
-	            	if(isHome) {
-	            		if(position == 0) comunidades = true; //Click Comunidades y otros
-	            		onUrl.add(first.get(1)[position].toString());
-	            		onName.add(first.get(0)[position].toString());
-	            	} else { 
-	            		if(position==0){ //Click atr�s
-	            			onUrl.remove(onUrl.size() - 1); //Quitamos la URL actual
-	            			onName.remove(onName.size() - 1); //Quitamos el Nombre actual
-	            			comunidades = false;
-	            			if(onUrl.size()>=2 && (onUrl.get(0).toString().equals(onUrl.get(1).toString()))) comunidades = true;
-	            		} else {
-	            			onUrl.add(first.get(1)[position].toString());
-	                    	onName.add(first.get(0)[position].toString());
-	            		}
+            	if(isInternetPresent) {
+	            	if(!(first.get(2)[position].toString().equals("0")) && !(first.get(2)[position].toString().equals("1")) && !(first.get(2)[position].toString().equals("6"))) {
+	            		isDocument = true;
+	            		docPosition = position;
+	            		Log.d("TIPO", "DOCUMENTO");
+	            		// ProgressDialog (salta para mostrar el proceso del archivo descarg�ndose)
+	            		dialog = new ProgressDialog(mycontext);
+	                    
+	            		// Servicio para la descarga del archivo
+	            		i = new Intent(mycontext, CurlService.class);
+		                bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); // Conectamos el servicio
+	            	} else {
+	            		isDocument = false;
+		            	if(onUrl.get(onUrl.size() - 1) == "/dotlrn/?page_num=2" && !comunidades){
+		                	isHome = true;
+		                } else {
+		                	isHome = false;
+		                }
+		            	//Cuando se hace click en una opci�n de la lista, queremos borrar todo mientras carga, inclu�do el t�tulo header
+		            	headerTitle.setText(null);
+		            	lstAdapter.clearData();
+		            	// Refrescamos View
+		            	lstAdapter.notifyDataSetChanged();
+		            	lstDocs.setDividerHeight(0);
+		            	if(isHome) {
+		            		if(position == 0) comunidades = true; //Click Comunidades y otros
+		            		onUrl.add(first.get(1)[position].toString());
+		            		onName.add(first.get(0)[position].toString());
+		            	} else { 
+		            		if(position==0){ //Click atr�s
+		            			onUrl.remove(onUrl.size() - 1); //Quitamos la URL actual
+		            			onName.remove(onName.size() - 1); //Quitamos el Nombre actual
+		            			comunidades = false;
+		            			if(onUrl.size()>=2 && (onUrl.get(0).toString().equals(onUrl.get(1).toString()))) comunidades = true;
+		            		} else {
+		            			onUrl.add(first.get(1)[position].toString());
+		                    	onName.add(first.get(0)[position].toString());
+		            		}
+		            	}
+		            	Log.d("URL", onUrl.get(onUrl.size() - 1));
+		            	i = new Intent(mycontext, CurlService.class);
+		                bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); // Conectamos el servicio
 	            	}
-	            	Log.d("URL", onUrl.get(onUrl.size() - 1));
-	            	i = new Intent(mycontext, CurlService.class);
-	                bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); // Conectamos el servicio
-            	}
+	            } else {
+	            	Toast.makeText(getBaseContext(),"Oops..! No existe conexión a Internet.", Toast.LENGTH_LONG).show();
+	            }
             }
         });
 	    
