@@ -41,3 +41,4 @@ None yet
 + Cool calendar
 + Webmail integration (?)
 + Remote repository of college notes created by students through the application (?)
++ New activity where student can see a list of already downloaded documents and they have not deleted
