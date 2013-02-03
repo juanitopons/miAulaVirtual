@@ -126,7 +126,6 @@ public class DisplayMessageActivity extends Activity {
         
         // creating connection detector class instance
         cd = new ConnectionDetector(getApplicationContext());
-        isInternetPresent = cd.isConnectingToInternet();
         
         // Datos por defecto de la primera respuesta
         mycontext = this;
@@ -179,6 +178,7 @@ public class DisplayMessageActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> a, View v, int position, long id) { //Al clicar X item de la lista
             	Boolean isHome;
+            	isInternetPresent = cd.isConnectingToInternet();
             	if(isInternetPresent) {
 	            	if(!(first.get(2)[position].toString().equals("0")) && !(first.get(2)[position].toString().equals("1")) && !(first.get(2)[position].toString().equals("6"))) {
 	            		isDocument = true;
@@ -460,6 +460,7 @@ public class DisplayMessageActivity extends Activity {
     public void onRestart()
     {
         super.onRestart();
+        isInternetPresent = cd.isConnectingToInternet();
         Log.d(tag, "In the onRestart() event");
         
         /**

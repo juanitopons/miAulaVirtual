@@ -145,6 +145,7 @@ public class MainActivity extends Activity {
     public void onRestart()
     {
         super.onRestart();
+        isInternetPresent = cd.isConnectingToInternet();
         Log.d(tag, "In the onRestart() event"); 
     }
     
@@ -179,6 +180,7 @@ public class MainActivity extends Activity {
          * Habr� que guardar el Usuario y Contrase�a si es la primera vez que loguea (es la primera vez que loguea porque se envia el SEND.
          * 
          */
+    	isInternetPresent = cd.isConnectingToInternet();
     	if(isInternetPresent) {
 	    	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 	        Editor editor = prefs.edit();
