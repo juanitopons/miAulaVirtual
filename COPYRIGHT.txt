@@ -1,0 +1,22 @@
+miAulaVirtual is copyright Juan Pons, 2013, and files herein are licensed
+under the General Public License version 3, the text of which can
+be found in GNU-GPL-3, or any later version of the GPL, unless otherwise
+noted.
+
+Some components of miAulaVirtual, including JSoup, Android and various JAVA classes, are
+licensed under their respective license. All unmodified files from these
+and other sources retain their original copyright and license notices: see
+the relevant individual files. Attribution information for miAulaVirtual is
+contained in the README file.
+
+In addition, as a special exception, the copyright holders give
+permission to link the code of portions of this program with the
+OpenSSL library under certain conditions as described in each
+individual source file, and distribute linked combinations
+including the two.
+
+You must obey the GNU General Public License V3 or later in all respects
+for all of the code used. If you modify file(s) with this license, you may extend this
+license to your version of the file(s).
+
+Contact: juanpons1459@gmail.com
