@@ -5,6 +5,13 @@ Android native App that connect to the virtual classroom of the University of Va
 
 <i>Omnia sunt communia</i>
 
+## Licenses ##
+The code licensed here under the GNU General Public License, version 3 [GPL-3.0](http://www.gnu.org/licenses/gpl-3.0.html) has been developed by Juan Pons.
+
+It is a standard version of miAulaVirtual, whose development and adaptation should be undertaken by those who implement it, corresponding to the specified license and without maintenance, legal or any other responsibility of Juan Pons.
+
+Developed with usage of: Java, XML, Android, JSoup's licensed library and other licensed Java libraries.
+
 ## Current version ##
 Version not yet fully functional
 
