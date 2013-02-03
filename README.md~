@@ -20,7 +20,7 @@ Android version compatibility: 2.0 and onward
 ## To do ##
 + Save instance of the activity on screen orientation change
 + Change Android back button functionality: For going hierarchically back in navigation and not to exit the application
-+ Add internet 3G, WIFI (not) access exception
++ Add internet 3G, WIFI (not) access exception - <b><i>DONE</i></b>
 + Add virtual classroom 'down' (offline or unreachable) exception (Response.statusMessage())
 + Add content provider for the opening of documents after download
 + Remove keyboard just after sending the login

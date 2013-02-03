@@ -28,6 +28,7 @@ Android version compatibility: 2.0 and onward
 + <b><i>ListView</i> Search<b/>
 + Clean code
 + Add 'cancel' button while downloading - <b><i>DONE</i></b>
++ Preference option for filtering empty folders
 
 ## Change Log ##
 None yet
