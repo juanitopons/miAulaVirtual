@@ -164,10 +164,10 @@ public class CurlService extends Service {
         protected void onPreExecute() {
         	// ProgressDialog (salta para mostrar el proceso del archivo descarg�ndose)
     		pdialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-    		pdialog.setMessage("Procesando...");
+    		pdialog.setMessage(getString(R.string.process));
             pdialog.setCancelable(true);
             pdialog.setMax(100);
-            pdialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancelar",
+            pdialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel_button),
             		new DialogInterface.OnClickListener() {
             		public void onClick(DialogInterface dialog,
             		int whichButton)
@@ -177,11 +177,6 @@ public class CurlService extends Service {
             		});
 	        pdialog.show();
         }
-        
-        
-        protected void onPostExecute(String size) {
-        	
-        }
     }
     
     private class urlConnect extends AsyncTask<Void, Integer, Response> {
@@ -189,7 +184,7 @@ public class CurlService extends Service {
     	urlConnect(Context context) {
     		mycontext = context;
     		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
-    	    scookie = prefs.getString("cookies", ""); //�Existe cookie?
+    	    scookie = prefs.getString("cookies", ""); //¿Is there saved cookie?
     	    if(scookie!="") {
     	    	Log.d("Cookie", "Cookie string:" + scookie);
     	    	cookies = toMap(scookie); //Si existe cookie la pasamos a MAP para luego procesar el GET con la cookie
@@ -322,7 +317,7 @@ public class CurlService extends Service {
     
 	public void connect() throws IOException {
 		/**
-		 * Chequear si se est� logueado (verificar sesi�n)
+		 * Chequear si se está logueado (verificar sesión)
 		 * Si NO se esta setData();
 		 * Si se esta...continuar
 		 */
@@ -330,7 +325,7 @@ public class CurlService extends Service {
 			    .data("__confirmed_p", confirm, "__refreshing_p", refresh, "form:id", fm_id, "form:mode", fm_mode, "formbutton:ok", fm_button, "hash", hash, "time", time, "return_url", url, "token_id", token_id, "username", user, "password", pass)
 			    .method(Method.POST)
 			    .execute();
-		res = resp; //IMPORTANTE verificar� si el usuario ha logueado o por el contrario ha dado una contrase�a o usuario incorrecto(s)
+		res = resp; //IMPORTANTE verificará si el usuario ha logueado o por el contrario ha dado una contraseña o usuario incorrecto(s)
 		cookies = resp.cookies();
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
         Editor editor = prefs.edit();
@@ -341,7 +336,7 @@ public class CurlService extends Service {
 	
 	public void connectGet() throws IOException {
 		Response resp = Jsoup.connect("https://aulavirtual.uv.es"+ url).cookies(cookies).method(Method.GET).execute();
-		res = resp; //Nombre Asignaturas String
+		res = resp;
 		Log.d("Connect", "Conectando con cookies");
 		Log.d("URL", "https://aulavirtual.uv.es"+url);
 		Log.d("COOKIE GET", resp.cookies().toString());
@@ -370,46 +365,14 @@ public class CurlService extends Service {
 		}
     	Log.d("Document", request);
     	Log.d("Document", url_back);
+    	
+    	// Recheck cookie isn't expire
     	Response resp = Jsoup.connect("https://aulavirtual.uv.es"+ url_back).cookies(cookies).method(Method.GET).execute();
     	res = resp;
     	Log.d("Document", "Respuesta2");
-    		/**
-    		// Guardamos nuestro documento
-    		lastSlash = url.toString().lastIndexOf('/');
-    		
-    		// Se crea el directorio
-    		String root = Environment.getExternalStorageDirectory().toString();
-    	    File myDir = new File(root + "/Android/data/com.jp.miaulavirtual/files");    
-    	    myDir.mkdirs();
-    	    
-    	    // Se crea el Documento
-    	    String name = url.toString().substring(lastSlash + 1);
-    	    File file = new File (myDir, name);
-    		
-    		// Descargamos el archivo si no existe
-    		if (!file.exists ()) { 
-    			try {
-    				Log.d("Document", "descargando...");
-    				
-    				final int BUFFER_SIZE = 23 * 1024;
-    				InputStream is = new ByteArrayInputStream(bytes);
-    				BufferedInputStream bis = new BufferedInputStream(is, BUFFER_SIZE);
-    				
-    				FileOutputStream fos = new FileOutputStream(file);
-    				byte[] baf = new byte[BUFFER_SIZE];
-    				int actual = 0;
-    				while (actual != -1) {
-    				    fos.write(baf, 0, actual);
-    				    actual = bis.read(baf, 0, BUFFER_SIZE);
-    				}
-
-    				fos.close();
-    			} catch (Exception e) {
-    				e.printStackTrace();
-    			}
-    		}	
-    		startOk3(mycontext, "Descargado"); **/
-    	if(res.hasCookie("ad_user_login")) { // El usuario y la contrase�a son correctas al renovar la COOKIE (NO PUEDEN SER INCORRECTOS, YA ESTABA LOGUEADO)
+    	
+    	// Action in response of cookie checking
+    	if(res.hasCookie("ad_user_login")) { // El usuario y la contraseña son correctas al renovar la COOKIE (NO PUEDEN SER INCORRECTOS, YA ESTABA LOGUEADO)
         	Log.d("Cookie", String.valueOf(i));
         	if(i==2) new docDownload(mycontext).execute(); //REejecutamos la tarea docDownload
     	} else if(res.hasCookie("fs_block_id")) {
@@ -501,14 +464,14 @@ public class CurlService extends Service {
     	    // notify completion
     	    switch(id) {
     	    case 0: // cancelled
-    	    	startOk3(mycontext, "¡Descarga cancelada!", task_status);
+    	    	startOk3(mycontext, getString(R.string.toast_0), task_status);
     	    	break;
     	    case 1: // OK
     	    	startOk3(mycontext, humanReadableByteCount(fileSize, true), task_status);
     	    	break;
     	    	
     	    case 2: // not enought free storage space
-    	    	startOk3(mycontext, "Espacio insuficiente en la tarjeta de memoria", task_status);
+    	    	startOk3(mycontext, getString(R.string.toast_2), task_status);
     	    	break;
     	    }  
 	    } catch(Exception e)

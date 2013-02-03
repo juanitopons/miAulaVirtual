@@ -113,7 +113,7 @@ public class DisplayMessageActivity extends Activity {
 	        			dialog.dismiss();
 	        			String size =  intent.getStringExtra("data");
 	        			isDocument = false;
-	        			Toast.makeText(getBaseContext(),"Descarga finalizada, "+size+ " descargados.", Toast.LENGTH_SHORT).show();
+	        			Toast.makeText(getBaseContext(),getString(R.string.cont_1)+""+size+""+getString(R.string.cont_2), Toast.LENGTH_SHORT).show();
 	        		} else if(fServ.equals("oops")) {
 	        			dialog.dismiss();
 	        			isDocument = false;
@@ -177,11 +177,11 @@ public class DisplayMessageActivity extends Activity {
 			e.printStackTrace();
 		}
         
-        first.add(asigsToArray(elements, true, comunidades)); // A�adimos el Array con los  nombres de Carpetas, Asignaturas y Archivos al ArrayList - [0]
+        first.add(asigsToArray(elements, true, comunidades)); // Añadimos el Array con los  nombres de Carpetas, Asignaturas y Archivos al ArrayList - [0]
         String s[] = urlsToArray(elements, true, comunidades);
-        first.add(s); // A�adimos el Array con las  URLS al ArrayList - [1]
+        first.add(s); // Añadimos el Array con las  URLS al ArrayList - [1]
         int mysize = s.length;
-        first.add(typeToArray(elements, true, comunidades, mysize)); // A�adimos el Array con los TYPES al ArrayList - [2]
+        first.add(typeToArray(elements, true, comunidades, mysize)); // Añadimos el Array con los TYPES al ArrayList - [2]
         
         //Copia de FIRST que puede ser borrada
         ArrayList<Object[]> first2 = new ArrayList<Object[]>();
@@ -216,7 +216,7 @@ public class DisplayMessageActivity extends Activity {
 		                } else {
 		                	isHome = false;
 		                }
-		            	//Cuando se hace click en una opci�n de la lista, queremos borrar todo mientras carga, inclu�do el t�tulo header
+		            	//Cuando se hace click en una opción de la lista, queremos borrar todo mientras carga, inclu�do el t�tulo header
 		            	headerTitle.setText(null);
 		            	lstAdapter.clearData();
 		            	// Refrescamos View
@@ -242,19 +242,10 @@ public class DisplayMessageActivity extends Activity {
 		                bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); // Conectamos el servicio
 	            	}
 	            } else {
-	            	Toast.makeText(getBaseContext(),"Oops..! No existe conexión a Internet.", Toast.LENGTH_LONG).show();
+	            	Toast.makeText(getBaseContext(),getString(R.string.no_internet), Toast.LENGTH_LONG).show();
 	            }
             }
         });
-	    
-		// Segunda llamada
-		/**
-		url = "/dotlrn/classes/c033/34665/c13c033a34665gA/file-storage/?folder_id=137175920";
-	    
-	    i = new Intent(this, CurlService.class);
-        bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); // Conectamos el servicio
-        textview.setText("Cargando GET");
-        **/
 	    
 	    if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
         IntentFilter intentFilter = new IntentFilter(CurlService.RESPONSE);
@@ -382,9 +373,6 @@ public class DisplayMessageActivity extends Activity {
 	    			LayoutInflater inflater = context.getLayoutInflater();
 	    	        item = inflater.inflate(R.layout.load_list, null);
 	    	        item.setMinimumHeight(35);
-	    	        
-	    			//ProgressBar lst_load = (ProgressBar)item.findViewById(R.id.list_load);
-	    			//lst_load.setVisibility(0);
 	    	}
 	        return(item);
 	    }
@@ -431,48 +419,10 @@ public class DisplayMessageActivity extends Activity {
 		
 	}
 	
-	/** public void myConnect(String url) {
-            // Call a method from the LocalService.
-            // However, if this call were something that might hang, then this request should
-            // occur in a separate thread to avoid slowing down the activity performance.
-            cURL.url = url;
-            try {
-				cURL.connect();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-            Log.d("Service", "Servicio conectandose a otra uri");
-    }
-	
-	public String myAsignaturas() throws IOException {
-        // Call a method from the LocalService.
-        // However, if this call were something that might hang, then this request should
-        // occur in a separate thread to avoid slowing down the activity performance.
-		Log.d("Service", "Servicio asignaturasString");
-		return cURL.asignaturasString();
-	} **/
-	
     public void onStart()
     {
         super.onStart();
         Log.d(tag, "In the onStart() event");
-        
-
-        /** Elements elem = elements.select("td[headers=folders_name]"); //Nombre Asignaturas
-		
-		if(!elem.isEmpty()) {} //SI NO HAY ASIGNATURAS
-		String [] asignaturas = new String[elem.size()];
-		for(int i=0; i<=(elem.size()-1); i++) {
-			asignaturas[i] = elem.get(i).text();
-		}
-		return asignaturas;
-        try {
-			textview.setText(asignaturasString());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} **/
         
     }
     
@@ -512,6 +462,7 @@ public class DisplayMessageActivity extends Activity {
         super.onDestroy();
         Log.d(tag, "In the onDestroy() event");
         if(dataUpdateReceiver!=null) unregisterReceiver(dataUpdateReceiver);
+        
         //ELIMINAR COOKIE DEL CACHE para que siempre que se inicie la aplicacion haga POST
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Editor editor = prefs.edit(); //eliminamos la cookie
@@ -521,7 +472,7 @@ public class DisplayMessageActivity extends Activity {
 
 	
     /**
-     * Acci�n para cada Item del Menu
+     * Acción para cada Item del Menu
      */
     public boolean onOptionsItemSelected(MenuItem item){
         /*El switch se encargar� de gestionar cada elemento del men� dependiendo de su id,

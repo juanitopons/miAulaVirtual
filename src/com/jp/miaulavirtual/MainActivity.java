@@ -68,7 +68,7 @@ public class MainActivity extends Activity {
 	        	boolean logged = intent.getBooleanExtra("logged", true);
 	        	if(!logged) { 
 	        		setContentView(R.layout.activity_main); 
-	        		Toast.makeText(getBaseContext(),"Usuario o contrase�a incorrectos", Toast.LENGTH_LONG).show();
+	        		Toast.makeText(getBaseContext(),getString(R.string.bad_data), Toast.LENGTH_LONG).show();
 	        		stopService(i);
 	        		unbindService(CurlConnection);
 	        	} else {
@@ -113,7 +113,7 @@ public class MainActivity extends Activity {
 	            bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); //conectamos el servicio
             } else {
             	setContentView(R.layout.activity_main);
-            	Toast.makeText(getBaseContext(),"Oops..! No existe conexión a Internet.", Toast.LENGTH_LONG).show();
+            	Toast.makeText(getBaseContext(),getString(R.string.no_internet), Toast.LENGTH_LONG).show();
             }
 
         	/** String [] user_data;
@@ -229,7 +229,7 @@ public class MainActivity extends Activity {
 	        IntentFilter intentFilter = new IntentFilter(CurlService.LOGGED);
 	        registerReceiver(dataUpdateReceiver, intentFilter);
     	} else {
-    		Toast.makeText(getBaseContext(),"Oops..! No existe conexión a Internet.", Toast.LENGTH_LONG).show();
+    		Toast.makeText(getBaseContext(),getString(R.string.no_internet), Toast.LENGTH_LONG).show();
     	}
     }
 
