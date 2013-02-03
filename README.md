@@ -37,6 +37,7 @@ Android version compatibility: 2.0 and onward
 + Clean code
 + Add 'cancel' button while downloading - <b><i>DONE</i></b>
 + Preference option for filtering empty folders
++ Preference option for language (Spanish, Catalan, English)
 
 ## Change Log ##
 None yet

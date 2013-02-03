@@ -31,7 +31,8 @@ Android version compatibility: 2.0 and onward
 + Add virtual classroom 'down' (offline or unreachable) exception (Response.statusMessage())
 + Add content provider for the opening of documents after download
 + Remove keyboard just after sending the login
-+ Check if there is SDCARD. Check SDCARD space before downloading - <b><i>DONE</i></b>
++ Check SDCARD space before downloading - <b><i>DONE</i></b>
++ Check if there is SDCARD. 
 + <b><i>ListView</i> Search<b/>
 + Clean code
 + Add 'cancel' button while downloading - <b><i>DONE</i></b>
