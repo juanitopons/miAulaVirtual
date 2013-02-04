@@ -452,7 +452,7 @@ public class CurlService extends Service {
 			        }
 			        
 			        // Delete archive if cancel pressed
-			        if(!task_status) file.delete(); id=0;
+			        if(!task_status) { file.delete(); id=0; }
 			        
 			        // Close stream
 			        outStream.close();
@@ -502,7 +502,6 @@ public class CurlService extends Service {
 		String [] arrayc = scookie.split(" *[=,^{}$] *");
 		String cookies ="";
 		for(int a = 1; a<(int)arrayc.length; a++) {
-			System.out.println(arrayc[a]);
 			cookies += arrayc[a]+"="+arrayc[a+1]+"; ";
 			a = a+1;
 		}

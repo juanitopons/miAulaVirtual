@@ -113,7 +113,7 @@ public class DisplayMessageActivity extends Activity {
 	        			dialog.dismiss();
 	        			String size =  intent.getStringExtra("data");
 	        			isDocument = false;
-	        			Toast.makeText(getBaseContext(),getString(R.string.cont_1)+""+size+""+getString(R.string.cont_2), Toast.LENGTH_SHORT).show();
+	        			Toast.makeText(getBaseContext(),getString(R.string.cont_1)+" "+size+" "+getString(R.string.cont_2), Toast.LENGTH_SHORT).show();
 	        		} else if(fServ.equals("oops")) {
 	        			dialog.dismiss();
 	        			isDocument = false;

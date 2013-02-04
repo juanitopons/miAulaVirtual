@@ -102,7 +102,7 @@ public class MainActivity extends Activity {
         pass = prefs.getString("mypass", "Ninguno");
         url = "/dotlrn/?page_num=2";
        
-        if(user!="Ninguno" && user!=""){ //Si el usuario entra a la aplicación y ya está logueado
+        if(!user.equals("Ninguno")){ //Si el usuario entra a la aplicación y ya está logueado
         	setContentView(R.layout.activity_main2); //Content si está logueado - Loader mientras espera el scrap
         	
         	Log.d("DATOS", user);

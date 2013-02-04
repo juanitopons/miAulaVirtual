@@ -38,6 +38,7 @@ Android version compatibility: 2.0 and onward
 + Add 'cancel' button while downloading - <b><i>DONE</i></b>
 + Preference option for filtering empty folders
 + Preference option for language (Spanish, Catalan, English)
++ Folder direct access widget
 
 ## Change Log ##
 None yet
