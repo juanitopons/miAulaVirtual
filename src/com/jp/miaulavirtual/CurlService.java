@@ -326,7 +326,6 @@ public class CurlService extends Service {
         if(status) bcIntent.putExtra("response", "cont");
         if(!status) bcIntent.putExtra("response", "oops");
         bcIntent.putExtra("id", id);
-        Log.d("Exception", "Timeout3");
         sendBroadcast(bcIntent);
     	}
     
@@ -437,6 +436,8 @@ public class CurlService extends Service {
 	    String cookies = cookieFormat(scookie); // format cookie for URL setRequestProperty
 	    final int BUFFER_SIZE = 23 * 1024;
 	    int id = 1;
+	    
+	    File file = null;
 		
 		Log.d("Document", "2ª respueesta");
 	    try
@@ -451,7 +452,7 @@ public class CurlService extends Service {
     	    
     	    // Document creation
     	    String name = url.toString().substring(lastSlash + 1);
-    	    File file = new File (myDir, name);
+    	    file = new File (myDir, name);
     	    fileSize = (long) file.length();
     	    
     	    // Check if we have already downloaded the whole file
@@ -463,6 +464,8 @@ public class CurlService extends Service {
 		        conn = url2.openConnection();
 		        conn.setUseCaches(false);
 		        conn.setRequestProperty("Cookie", cookies);
+		        conn.setConnectTimeout(10*1000);
+		        conn.setReadTimeout(20*1000);
 		        fileSize = (long) conn.getContentLength();
 		        
 		        // Check if we have necesary space
@@ -497,14 +500,26 @@ public class CurlService extends Service {
 	    }
 	    catch(MalformedURLException e) // Invalid URL
 	    {
+	    	task_status = false;
+	    	if(file.exists ()) { file.delete(); }
 	    	id = 3;
 	    }
 	    catch(FileNotFoundException e) // FIle not found
 	    {
+	    	task_status = false;
+	    	if(file.exists ()) { file.delete(); }
 	    	id = 4;
+	    }
+	    catch(SocketTimeoutException e) // time out
+	    {
+	    	task_status = false;
+	    	if(file.exists ()) { file.delete(); }
+	    	id = 6;
 	    }
 	    catch(Exception e) // General error
 	    {
+	    	task_status = false;
+	    	if(file.exists ()) { file.delete(); }
 	    	id = 5;
 	    }
 	    
