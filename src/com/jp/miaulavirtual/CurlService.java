@@ -401,7 +401,7 @@ public class CurlService extends Service {
     	Log.d("Document", url_back);
     	
     	// Recheck cookie isn't expire
-    	Response resp = Jsoup.connect("https://aulavirtual.uv.es"+ url_back).cookies(cookies).method(Method.GET).execute();
+    	Response resp = Jsoup.connect("https://aulavirtual.uv.es"+ url_back).cookies(cookies).method(Method.GET).timeout(10*1000).execute();
     	res = resp;
     	Log.d("Document", "Respuesta2");
     	
