@@ -12,8 +12,6 @@
     <string name="bad_data">Usuario o contraseña incorrectos</string>
     
     <!--- DISPLAY -->
-    <string name="cont_1">Descarga finalizada, </string>
-    <string name="cont_2"> descargados.</string>
 
 	<!--- DOCS -->
 	<string name="mydocs">Mis Documentos</string>
@@ -30,6 +28,11 @@
     <string name="cancel_button">Cancelar</string>
     <string name="process">Procesando&#8230;</string>
     <string name="toast_0">¡Descarga cancelada!</string>
+    <string name="toast_1">¡Descarga finalizada!</string>
     <string name="toast_2">Espacio insuficiente en la tarjeta de memoria</string>
+    <string name="toast_3">Error: archivo inválido!</string>
+    <string name="toast_4">Error: archivo no encontrado!</string>
+    <string name="toast_5">Oops..! Ha ocurrido algún error.</string>
+    <string name="toast_6">Problemas de conexión&#8230;</string>
 
 </resources>

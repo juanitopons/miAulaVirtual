@@ -23,10 +23,13 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -138,19 +141,30 @@ public class CurlService extends Service {
     		// ProgressDialog (salta para mostrar el proceso del archivo descarg�ndose)
     	}
     	protected Void doInBackground(Void... params) {
-    		try {
-            	if(cookies != null) {
-            		Log.d("Document", "getDoc AHORA");
-            		getDoc(mycontext);
-            		Log.d("Cookie", "HAY COOKIE!");
-            	} else {
-            		setData();
-            		connect();
+        	if(cookies != null) {
+        		Log.d("Document", "getDoc AHORA");
+        		try {
+        			getDoc(mycontext);
+            	}catch(SocketTimeoutException e)
+            	{
+            		startOk3(mycontext, 6, false);
+            	}catch(IOException e)
+            	{
+            		startOk3(mycontext, 6, false);
             	}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        		Log.d("Cookie", "HAY COOKIE!");
+        	} else {
+        		try {
+        			setData();
+        			connect();
+            	}catch(SocketTimeoutException e)
+            	{
+            		startOk3(mycontext, 6, false);
+            	}catch(IOException e)
+            	{
+            		startOk3(mycontext, 6, false);
+            	}
+        	}
             return null;
         }
     	
@@ -192,71 +206,88 @@ public class CurlService extends Service {
     	}
     	
     	protected Response doInBackground(Void... params) {
-            try {
-				
-            	//Mirar si hay datos en cache, si los hay, cogerlos y hacer el get()
-            	if(cookies != null) { //si hay cookie, hacemos el GET
-            		isInside = true;
-            		Log.d("Cookie", "HAY COOKIE!");
+        	//Mirar si hay datos en cache, si los hay, cogerlos y hacer el get()
+        	if(cookies != null) { //si hay cookie, hacemos el GET
+        		isInside = true;
+        		Log.d("Cookie", "HAY COOKIE!");
+        		try {
             		connectGet();
-            	} else { //Si no hay cookie, hacemos el POST
-            		isInside = false;
-            		Log.d("Cookie", "NO HAY COOKIE!");
-	            	setData();
-					connect();
+            	}catch(SocketTimeoutException e)
+            	{
+            		res = null;
+            	}catch(IOException e)
+            	{
+            		res = null;
             	}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-            publishProgress(100);
+        	} else { //Si no hay cookie, hacemos el POST
+        		isInside = false;
+        		Log.d("Cookie", "NO HAY COOKIE!");
+            	try {
+            		setData();
+            		connect();
+            	}catch(SocketTimeoutException e)
+            	{
+            		res = null;
+            	}catch(IOException e)
+            	{
+            		res = null;
+            	}
+        	}
             return res;
         }
 
         protected void onProgressUpdate(Integer... progress) {
-            /** Log.d("Scrapping",
-                    String.valueOf(progress[0]) + "% scrapped");
-            Toast.makeText(getBaseContext(),
-                String.valueOf(progress[0]) + "% scrapped",
-                Toast.LENGTH_LONG).show(); **/
         }
 
         protected void onPostExecute(Response response) {
-            if(res.hasCookie("ad_user_login")) { // El usuario y la contrase�a son correctas
-            	Log.d("Cookie", String.valueOf(i));
-            	if(i==2) {
-            		new urlConnect(mycontext).execute(); //REejecutamos la tarea (GET)
-            	} else {
-	            	Intent bcIntent = new Intent();
-	                bcIntent.setAction(LOGGED);
-	                bcIntent.putExtra("logged", true);
-	                sendBroadcast(bcIntent);
-	            	startOk(response, mycontext);
-            	}
-            } else if(res.hasCookie("fs_block_id")) { // No tiene "ad_user_login" pero si "fs_block_id" --> Cookie NO vencida
-            	startOk2(response, mycontext);
-            } else if(res.hasCookie("ad_session_id")) { // Usuario y contrase�a incorrectos. No tiene ni "ad_user_login" ni "fs_block_id"
-            	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
-            	Editor editor = prefs.edit();
-            	if(!isInside) {	// Usuario y contrase�a incorrectos en POST
-	            		editor.remove("cookies");
-	                	editor.commit();
-	            		Intent bcIntent = new Intent();
+            if(res != null) {
+	        	if(res.hasCookie("ad_user_login")) { // El usuario y la contrase�a son correctas
+	            	Log.d("Cookie", String.valueOf(i));
+	            	if(i==2) {
+	            		new urlConnect(mycontext).execute(); //REejecutamos la tarea (GET)
+	            	} else {
+		            	Intent bcIntent = new Intent();
 		                bcIntent.setAction(LOGGED);
-		                bcIntent.putExtra("logged", false);
+		                bcIntent.putExtra("logged", true);
 		                sendBroadcast(bcIntent);
-            	} else { // Cookie Vencida
-	                	editor.remove("cookies");
-	                	editor.commit();
-	                	cookies = null; //eliminamos la cookie
-	                	i = i+1; // Aumentamos el contador
-	                	Log.d("Cookie", "COOKIE VENCIDA");
-	                	new urlConnect(mycontext).execute(); //REejecutamos la tarea (POST)
-            	}
-            } else if(res.hasCookie("tupi_style") || res.hasCookie("zen_style")) { // Cookie correcta, sesi�n POST ya habilitada. GET correcto. Procede.
-            	startOk2(response, mycontext);
-            }
-            
+		            	startOk(response, mycontext);
+	            	}
+	            } else if(res.hasCookie("fs_block_id")) { // No tiene "ad_user_login" pero si "fs_block_id" --> Cookie NO vencida
+	            	startOk2(response, mycontext);
+	            } else if(res.hasCookie("ad_session_id")) { // Usuario y contrase�a incorrectos. No tiene ni "ad_user_login" ni "fs_block_id"
+	            	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
+	            	Editor editor = prefs.edit();
+	            	if(!isInside) {	// Usuario y contraseña incorrectos en POST
+		            	editor.remove("cookies");
+		                editor.commit();
+		            	Intent bcIntent = new Intent();
+			            bcIntent.setAction(LOGGED);
+			            bcIntent.putExtra("logged", false);
+			            bcIntent.putExtra("id", 0);
+			            sendBroadcast(bcIntent);
+	            	} else { // Cookie Vencida
+		                editor.remove("cookies");
+		                editor.commit();
+		                cookies = null; //eliminamos la cookie
+		                i = i+1; // Aumentamos el contador
+		                Log.d("Cookie", "COOKIE VENCIDA");
+		                new urlConnect(mycontext).execute(); //REejecutamos la tarea (POST)
+	            	}
+	            } else if(res.hasCookie("tupi_style") || res.hasCookie("zen_style")) { // Cookie correcta, sesi�n POST ya habilitada. GET correcto. Procede.
+	            	startOk2(response, mycontext);
+	            }
+	        } else {
+	        	Log.d("Exception", "Timeout2");
+	        	if(!isInside) {
+	        		Intent bcIntent = new Intent();
+		            bcIntent.setAction(LOGGED);
+		            bcIntent.putExtra("logged", false);
+		            bcIntent.putExtra("id", 1);
+		            sendBroadcast(bcIntent);
+	        	} else {
+	        		startOk3(mycontext, 6, false);
+	        	}
+	        }
         }
     }
     private void startOk(Response response, Context context) {
@@ -289,33 +320,35 @@ public class CurlService extends Service {
         sendBroadcast(bcIntent);
     	}
     
-    private void startOk3(Context context, String data, Boolean status) {
+    private void startOk3(Context context, int id, Boolean status) {
     	Intent bcIntent = new Intent();
         bcIntent.setAction(RESPONSE);
-        bcIntent.putExtra("data", data);
         if(status) bcIntent.putExtra("response", "cont");
         if(!status) bcIntent.putExtra("response", "oops");
+        bcIntent.putExtra("id", id);
+        Log.d("Exception", "Timeout3");
         sendBroadcast(bcIntent);
     	}
     
-    public void setData() throws IOException {
-    	Document av = Jsoup.connect("https://aulavirtual.uv.es/dotlrn/index").timeout(0).get();
-    	
-		Elements inputs = av.select("input[name=__confirmed_p], input[name=__refreshing_p], input[name=form:id], input[name=form:mode], input[name=formbutton:ok], input[name=hash], input[name=time], input[name=token_id]");
-		
-		confirm = inputs.get(2).attr("value");
-		refresh = inputs.get(3).attr("value");
-		fm_id = inputs.get(1).attr("value");
-		fm_mode = inputs.get(0).attr("value");
-		fm_button = inputs.get(7).attr("value");
-		hash = inputs.get(6).attr("value");
-		time = inputs.get(4).attr("value");
-		token_id = inputs.get(5).attr("value");
-		//Fin Variables POST
-		Log.d("Service", hash);
+    public void setData() throws IOException, SocketTimeoutException {
+	    	Document av = Jsoup.connect("https://aulavirtual.uv.es/dotlrn/index").timeout(10*1000).get();
+	    	
+			Elements inputs = av.select("input[name=__confirmed_p], input[name=__refreshing_p], input[name=form:id], input[name=form:mode], input[name=formbutton:ok], input[name=hash], input[name=time], input[name=token_id]");
+			
+			confirm = inputs.get(2).attr("value");
+			refresh = inputs.get(3).attr("value");
+			fm_id = inputs.get(1).attr("value");
+			fm_mode = inputs.get(0).attr("value");
+			fm_button = inputs.get(7).attr("value");
+			hash = inputs.get(6).attr("value");
+			time = inputs.get(4).attr("value");
+			token_id = inputs.get(5).attr("value");
+			//Fin Variables POST
+			Log.d("Service", hash);
+			Log.d("Service", url);
     }
     
-	public void connect() throws IOException {
+	public void connect() throws IOException, SocketTimeoutException {
 		/**
 		 * Chequear si se está logueado (verificar sesión)
 		 * Si NO se esta setData();
@@ -324,6 +357,7 @@ public class CurlService extends Service {
 		Response resp = Jsoup.connect("https://aulavirtual.uv.es/register/")
 			    .data("__confirmed_p", confirm, "__refreshing_p", refresh, "form:id", fm_id, "form:mode", fm_mode, "formbutton:ok", fm_button, "hash", hash, "time", time, "return_url", url, "token_id", token_id, "username", user, "password", pass)
 			    .method(Method.POST)
+			    .timeout(10*1000)
 			    .execute();
 		res = resp; //IMPORTANTE verificará si el usuario ha logueado o por el contrario ha dado una contraseña o usuario incorrecto(s)
 		cookies = resp.cookies();
@@ -334,8 +368,8 @@ public class CurlService extends Service {
         Log.d("Connect", "Conectando sin cookies");
 	}
 	
-	public void connectGet() throws IOException {
-		Response resp = Jsoup.connect("https://aulavirtual.uv.es"+ url).cookies(cookies).method(Method.GET).execute();
+	public void connectGet() throws IOException, SocketTimeoutException {
+		Response resp = Jsoup.connect("https://aulavirtual.uv.es"+ url).cookies(cookies).method(Method.GET).timeout(10*1000).execute();
 		res = resp;
 		Log.d("Connect", "Conectando con cookies");
 		Log.d("URL", "https://aulavirtual.uv.es"+url);
@@ -347,7 +381,7 @@ public class CurlService extends Service {
 	 * @return String - Tama�o del archivo en formato del SI
 	 * @throws IOException
 	 */
-    public void getDoc(Context mycontext) throws IOException {
+    public void getDoc(Context mycontext) throws IOException, SocketTimeoutException {
     	URI uri;
     	Log.d("Document", url);
     	String request = null;
@@ -396,7 +430,7 @@ public class CurlService extends Service {
     	URL url2;
 	    URLConnection conn;
 	    int lastSlash;
-	    Long fileSize;
+	    Long fileSize = null;
 	    BufferedInputStream inStream;
 	    BufferedOutputStream outStream;
 	    FileOutputStream fileStream;
@@ -459,25 +493,24 @@ public class CurlService extends Service {
 			        fileStream.close();
 			        inStream.close();
 		        }
-    	    }
-    	    
-    	    // notify completion
-    	    switch(id) {
-    	    case 0: // cancelled
-    	    	startOk3(mycontext, getString(R.string.toast_0), task_status);
-    	    	break;
-    	    case 1: // OK
-    	    	startOk3(mycontext, humanReadableByteCount(fileSize, true), task_status);
-    	    	break;
-    	    	
-    	    case 2: // not enought free storage space
-    	    	startOk3(mycontext, getString(R.string.toast_2), task_status);
-    	    	break;
-    	    }  
-	    } catch(Exception e)
-	    {
-	    	
+    	    } 
 	    }
+	    catch(MalformedURLException e) // Invalid URL
+	    {
+	    	id = 3;
+	    }
+	    catch(FileNotFoundException e) // FIle not found
+	    {
+	    	id = 4;
+	    }
+	    catch(Exception e) // General error
+	    {
+	    	id = 5;
+	    }
+	    
+	    // notify completion
+	    startOk3(mycontext, id, task_status);
+
     }	
 	
     /**

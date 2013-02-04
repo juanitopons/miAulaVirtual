@@ -66,10 +66,23 @@ public class MainActivity extends Activity {
 	    public void onReceive(Context context, Intent intent) {
 	        if (intent.getAction().equals(CurlService.LOGGED)) {
 	        	boolean logged = intent.getBooleanExtra("logged", true);
-	        	if(!logged) { 
-	        		setContentView(R.layout.activity_main); 
-	        		Toast.makeText(getBaseContext(),getString(R.string.bad_data), Toast.LENGTH_LONG).show();
-	        		stopService(i);
+	        	if(!logged) {
+	        		int id =  intent.getIntExtra("id", 2);
+            		switch(id) {
+            		case 0: 
+    	        		setContentView(R.layout.activity_main); 
+    	        		Toast.makeText(getBaseContext(),getString(R.string.bad_data), Toast.LENGTH_SHORT).show();
+			            break;
+            		case 1:
+            			Toast.makeText(getBaseContext(),getString(R.string.toast_6), Toast.LENGTH_LONG).show();
+            			setContentView(R.layout.activity_main);
+            			break;
+            		default:
+            			Toast.makeText(getBaseContext(),getString(R.string.toast_5), Toast.LENGTH_LONG).show();
+            			setContentView(R.layout.activity_main);
+            			break;
+            		}
+            		stopService(i);
 	        		unbindService(CurlConnection);
 	        	} else {
 	        		stopService(i);
