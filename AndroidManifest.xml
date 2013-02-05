@@ -42,8 +42,6 @@
             android:name="com.jp.miaulavirtual.SettingsActivity"
             android:label="@string/menu_settings" >
         </activity>
-        <service android:name="com.jp.miaulavirtual.CurlService">
-        </service>  
         
     </application>
 

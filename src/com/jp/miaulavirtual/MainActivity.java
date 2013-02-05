@@ -19,8 +19,19 @@
 
 package com.jp.miaulavirtual;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.util.Map;
+
+import org.jsoup.Jsoup;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
+
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.view.Menu;
@@ -30,11 +41,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.util.Log;
@@ -48,8 +57,6 @@ public class MainActivity extends Activity {
     ConnectionDetector cd;
 	
 	// Service
-	CurlService cURL;
-	Intent i;
 	
 	// User data
 	String user;
@@ -57,14 +64,23 @@ public class MainActivity extends Activity {
 	String url;
 	
 	String tag = "Lifecycle";
-	// Receiver from service
+	
+	//Respuesta
+	Response res;
+	Context mycontext;
+	
+	Map<String, String> cookies;
+	
+	// Receiver
+	public final static String RESPONSE = "com.jp.miaulavirtual.RESPONSE";
+	public final static String LOGGED = "com.jp.miaulavirtual.LOGGED";
 	private DataUpdateReceiver dataUpdateReceiver;
 	
 	//BroadcastReceiver, recibe variables de nuestro servicio posteriormente ejecutado CurlService
 	private class DataUpdateReceiver extends BroadcastReceiver {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
-	        if (intent.getAction().equals(CurlService.LOGGED)) {
+	        if (intent.getAction().equals(MainActivity.LOGGED)) {
 	        	boolean logged = intent.getBooleanExtra("logged", true);
 	        	if(!logged) {
 	        		int id =  intent.getIntExtra("id", 2);
@@ -82,11 +98,7 @@ public class MainActivity extends Activity {
             			setContentView(R.layout.activity_main);
             			break;
             		}
-            		stopService(i);
-	        		unbindService(CurlConnection);
 	        	} else {
-	        		stopService(i);
-	        		unbindService(CurlConnection);
 	        		finish();
 	        	}
 	        }
@@ -97,6 +109,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        mycontext = this;
         // creating connection detector class instance
         cd = new ConnectionDetector(getApplicationContext());
         isInternetPresent = cd.isConnectingToInternet();
@@ -122,8 +135,7 @@ public class MainActivity extends Activity {
             Log.d("DATOS", pass);
             
             if(isInternetPresent) {
-	        	i = new Intent(this, CurlService.class);
-	            bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); //conectamos el servicio
+            	new urlConnect().execute();
             } else {
             	setContentView(R.layout.activity_main);
             	Toast.makeText(getBaseContext(),getString(R.string.no_internet), Toast.LENGTH_LONG).show();
@@ -140,7 +152,7 @@ public class MainActivity extends Activity {
         }
         Log.d(tag, "In the onCreate() event");
         if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
-        IntentFilter intentFilter = new IntentFilter(CurlService.LOGGED);
+        IntentFilter intentFilter = new IntentFilter(MainActivity.LOGGED);
         registerReceiver(dataUpdateReceiver, intentFilter);
     }
 
@@ -235,39 +247,113 @@ public class MainActivity extends Activity {
 	        Log.d("DATOS2", pass);
 	        
 	        // Iniciamos el servicio de Scrap
-	        i = new Intent(this, CurlService.class);
-	        bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); //conectamos el servicio
+	        new urlConnect().execute();
 	        
 	        if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
-	        IntentFilter intentFilter = new IntentFilter(CurlService.LOGGED);
+	        IntentFilter intentFilter = new IntentFilter(MainActivity.LOGGED);
 	        registerReceiver(dataUpdateReceiver, intentFilter);
     	} else {
     		Toast.makeText(getBaseContext(),getString(R.string.no_internet), Toast.LENGTH_LONG).show();
     	}
     }
 
-    /** Defines callbacks for service binding, passed to bindService() */
-    ServiceConnection CurlConnection = new ServiceConnection() {
+    /* TASKS OR SERVICES */
+    
+    private class urlConnect extends AsyncTask<Void, Integer, Response> {
 
-        @Override
-        public void onServiceConnected(ComponentName className,
-                IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-        	cURL = ((CurlService.CurlBinder)service).getService();
-        	// Pasamos variables al Servicio
-        	cURL.user = user;
-        	cURL.pass = pass;
-        	cURL.url = url;
-        	cURL.isDocument = false;
-            startService(i);
-            Log.d("Service", "Servicio Conectado");
+    	protected Response doInBackground(Void... params) {
+        	//Mirar si hay datos en cache, si los hay, cogerlos y hacer el get()
+        		Log.d("Cookie", "HAY COOKIE!");
+        		try {
+            		setData();
+            	}catch(SocketTimeoutException e)
+            	{
+            		res = null;
+            	}catch(IOException e)
+            	{
+            		res = null;
+            	}
+            return res;
         }
 
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-        	cURL = null;
-        	Log.d("Service", "Servicio Desconectado");
+        protected void onProgressUpdate(Integer... progress) {
         }
-    };
+
+        protected void onPostExecute(Response response) {
+            if(res != null) {
+	        	if(res.hasCookie("ad_user_login")) { // El usuario y la contrase�a son correctas
+		            	Intent bcIntent = new Intent();
+		                bcIntent.setAction(LOGGED);
+		                bcIntent.putExtra("logged", true);
+		                sendBroadcast(bcIntent);
+		            	startOk(response, mycontext);
+	            } else if(res.hasCookie("ad_session_id")) { // Usuario y contrase�a incorrectos. No tiene ni "ad_user_login" ni "fs_block_id"
+	            	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
+	            	Editor editor = prefs.edit();
+		            	editor.remove("cookies");
+		                editor.commit();
+		            	Intent bcIntent = new Intent();
+			            bcIntent.setAction(LOGGED);
+			            bcIntent.putExtra("logged", false);
+			            bcIntent.putExtra("id", 0);
+			            sendBroadcast(bcIntent);
+	        	} else {
+	        		startOk3(mycontext, 6, false);
+	        	}
+	        } else {
+	        	Log.d("Exception", "Timeout2");
+	        		Intent bcIntent = new Intent();
+		            bcIntent.setAction(LOGGED);
+		            bcIntent.putExtra("logged", false);
+		            bcIntent.putExtra("id", 1);
+		            sendBroadcast(bcIntent);
+	        }
+        }
+    }
+    private void startOk(Response response, Context context) {
+    	String out = "";  
+    	Intent i = new Intent(this, DisplayMessageActivity.class);
+    	  try {
+			out = response.parse().body().toString();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	  i.putExtra("out", out);
+    	  i.putExtra("user", user);
+    	  i.putExtra("pass", pass);
+    	  i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    	  startActivity(i);
+    	}
+    
+    private void startOk3(Context context, int id, Boolean status) {
+    	Intent bcIntent = new Intent();
+        bcIntent.setAction(RESPONSE);
+        bcIntent.putExtra("id", id);
+        sendBroadcast(bcIntent);
+    }
+    
+    // CONEXIÓN
+    
+    public void setData() throws IOException, SocketTimeoutException {
+    	
+    	Document av = Jsoup.connect("https://aulavirtual.uv.es/dotlrn/index").timeout(10*1000).get();
+	    	
+		Elements inputs = av.select("input[name=__confirmed_p], input[name=__refreshing_p], input[name=form:id], input[name=form:mode], input[name=formbutton:ok], input[name=hash], input[name=time], input[name=token_id]");
+			
+		Response resp = Jsoup.connect("https://aulavirtual.uv.es/register/")
+			    .data("__confirmed_p", inputs.get(2).attr("value"), "__refreshing_p", inputs.get(3).attr("value"), "form:id", inputs.get(1).attr("value"), "form:mode", inputs.get(0).attr("value"), "formbutton:ok", inputs.get(7).attr("value"), "hash", inputs.get(6).attr("value"), "time", inputs.get(4).attr("value"), "return_url", url, "token_id", inputs.get(5).attr("value"), "username", user, "password", pass)
+			    .method(Method.POST)
+			    .timeout(10*1000)
+			    .execute();
+		res = resp; //IMPORTANTE verificará si el usuario ha logueado o por el contrario ha dado una contraseña o usuario incorrecto(s)
+		cookies = resp.cookies();
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
+        Editor editor = prefs.edit();
+        editor.putString("cookies", cookies.toString());
+        editor.commit();
+        Log.d("Connect", "Conectando sin cookies");
+
+    }
     
 }

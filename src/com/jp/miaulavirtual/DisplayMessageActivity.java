@@ -20,14 +20,30 @@
 package com.jp.miaulavirtual;
 
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 
 import org.jsoup.Jsoup;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 
 
 
@@ -35,16 +51,16 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
@@ -70,9 +86,19 @@ public class DisplayMessageActivity extends Activity {
     // Connection detector class
     ConnectionDetector cd;
 	
-	// Service
-	CurlService cURL; //Servicio
-	Intent i;
+	//Variables POST
+	String url;
+	public final static String RESPONSE = "com.jp.miaulavirtual.RESPONSE";
+	
+	String url_back;
+	Boolean task_status = true;
+	
+	//Respuesta
+	Response res;
+    
+	int a = 0; //Control n� de tareas por servicio 1 = GET || POST 2 = GET cookie vencida, POST, GET.
+	String scookie;
+	Map<String, String> cookies; //Obtener la cookie del cache
 	
 	// Activity
 	Context mycontext;
@@ -109,7 +135,7 @@ public class DisplayMessageActivity extends Activity {
 	private class DataUpdateReceiver extends BroadcastReceiver {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
-	        if (intent.getAction().equals(CurlService.RESPONSE)) {
+	        if (intent.getAction().equals(DisplayMessageActivity.RESPONSE)) {
 	        		fServ = intent.getStringExtra("response");
 	        		if(fServ.equals("cont")) {
 	        			Log.d("Exception", "Hola1");
@@ -165,8 +191,6 @@ public class DisplayMessageActivity extends Activity {
 		        		Log.d("Exception", "Hola3");
 	        		}
 	        		Log.d("Exception", "Hola0");
-	        		stopService(i);
-	        		unbindService(CurlConnection);
 	        }
 	    }
 	}
@@ -246,8 +270,10 @@ public class DisplayMessageActivity extends Activity {
 	            		dialog = new ProgressDialog(mycontext);
 	                    
 	            		// Servicio para la descarga del archivo
-	            		i = new Intent(mycontext, CurlService.class);
-		                bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); // Conectamos el servicio
+	            		url = first.get(1)[docPosition].toString();
+	            		url_back = onUrl.get(onUrl.size() - 2);
+	            		new docDownload().execute();
+
 	            	} else {
 	            		isDocument = false;
 		            	if(onUrl.get(onUrl.size() - 1) == "/dotlrn/?page_num=2" && !comunidades){
@@ -263,8 +289,9 @@ public class DisplayMessageActivity extends Activity {
 		            	lstDocs.setDividerHeight(0);
 		            	docPosition = position;
 		            	Log.d("URL", onUrl.get(onUrl.size() - 1));
-		            	i = new Intent(mycontext, CurlService.class);
-		                bindService(i, CurlConnection, Context.BIND_AUTO_CREATE); // Conectamos el servicio
+		            	
+		            	url = first.get(1)[docPosition].toString();
+		            	new urlConnect().execute();
 	            	}
 	            } else {
 	            	Toast.makeText(getBaseContext(),getString(R.string.no_internet), Toast.LENGTH_LONG).show();
@@ -273,7 +300,7 @@ public class DisplayMessageActivity extends Activity {
         });
 	    
 	    if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
-        IntentFilter intentFilter = new IntentFilter(CurlService.RESPONSE);
+        IntentFilter intentFilter = new IntentFilter(DisplayMessageActivity.RESPONSE);
         registerReceiver(dataUpdateReceiver, intentFilter);
         
 	}
@@ -655,35 +682,390 @@ public class DisplayMessageActivity extends Activity {
 		return s;
 	}
 	
-
-    /** Defines callbacks for service binding, passed to bindService() */
-    ServiceConnection CurlConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-        	cURL = ((CurlService.CurlBinder)service).getService();
-        	cURL.user = user;
-        	cURL.pass = pass;
-        	cURL.url = first.get(1)[docPosition].toString();
-
-        	if(isDocument) 
-        		{
-        		cURL.url = first.get(1)[docPosition].toString();
-        		cURL.url_back = onUrl.get(onUrl.size() - 2);
-        		cURL.pdialog = dialog;
-        		}
-        	cURL.isDocument = isDocument;
-            startService(i);
-            Log.d("Service", "Servicio Conectado");
+	/* TASKS OR SERVICES */
+	
+	private class docDownload extends AsyncTask<Void, Integer, Void> {
+		protected docDownload() {
+    		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
+    	    scookie = prefs.getString("cookies", ""); //�Existe cookie?
+    	    if(scookie!="") {
+    	    	Log.d("Cookie", "Cookie string:" + scookie);
+    	    	cookies = toMap(scookie); //Si existe cookie la pasamos a MAP para luego procesar el GET con la cookie
+    	    }
+    		// ProgressDialog (salta para mostrar el proceso del archivo descarg�ndose)
+    	}
+		
+    	protected Void doInBackground(Void... params) {
+        	if(cookies != null) {
+        		Log.d("Document", "getDoc AHORA");
+        		try {
+        			getDoc(mycontext);
+            	}catch(SocketTimeoutException e)
+            	{
+            		startOk3(mycontext, 6, false);
+            	}catch(IOException e)
+            	{
+            		startOk3(mycontext, 6, false);
+            	}
+        		Log.d("Cookie", "HAY COOKIE!");
+        	} else {
+        		try {
+        			setData();
+            	}catch(SocketTimeoutException e)
+            	{
+            		startOk3(mycontext, 6, false);
+            	}catch(IOException e)
+            	{
+            		startOk3(mycontext, 6, false);
+            	}
+        	}
+            return null;
+        }
+    	
+        protected void onProgressUpdate(Integer... progress) {
+            /** Log.d("Scrapping",
+                    String.valueOf(progress[0]) + "% scrapped");
+            Toast.makeText(getBaseContext(),
+                String.valueOf(progress[0]) + "% scrapped",
+                Toast.LENGTH_LONG).show(); **/
+        }
+        protected void onPreExecute() {
+        	// ProgressDialog (salta para mostrar el proceso del archivo descarg�ndose)
+    		dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+    		dialog.setMessage(getString(R.string.process));
+            dialog.setCancelable(true);
+            dialog.setMax(100);
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel_button),
+            		new DialogInterface.OnClickListener() {
+            		public void onClick(DialogInterface dialog,
+            		int whichButton)
+            		{
+            		task_status = false;
+            		}
+            		});
+	        dialog.show();
+        }
+    }
+    
+    private class urlConnect extends AsyncTask<Void, Integer, Response> {
+    	protected urlConnect() {
+    		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
+    	    scookie = prefs.getString("cookies", ""); //¿Is there saved cookie?
+    	    if(scookie!="") {
+    	    	Log.d("Cookie", "Cookie string:" + scookie);
+    	    	cookies = toMap(scookie); //Si existe cookie la pasamos a MAP para luego procesar el GET con la cookie
+    	    }
+    	}
+    	
+    	protected Response doInBackground(Void... params) {
+        	//Mirar si hay datos en cache, si los hay, cogerlos y hacer el get()
+        	if(cookies != null) { //si hay cookie, hacemos el GET
+        		Log.d("Cookie", "HAY COOKIE!");
+        		try {
+            		connectGet();
+            	}catch(SocketTimeoutException e)
+            	{
+            		res = null;
+            	}catch(IOException e)
+            	{
+            		res = null;
+            	}
+        	} else { //Si no hay cookie, hacemos el POST
+        		Log.d("Cookie", "NO HAY COOKIE!");
+            	try {
+            		setData();
+            	}catch(SocketTimeoutException e)
+            	{
+            		res = null;
+            	}catch(IOException e)
+            	{
+            		res = null;
+            	}
+        	}
+            return res;
         }
 
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-        	cURL = null;
-        	Log.d("Service", "Servicio Desconectado");
+        protected void onProgressUpdate(Integer... progress) {
         }
-    };
 
+        protected void onPostExecute(Response response) {
+            if(res != null) {
+	        	if(res.hasCookie("ad_user_login")) { // El usuario y la contrase�a son correctas
+	            	Log.d("Cookie", String.valueOf(a));
+	            	if(a==2) {
+	            		a = 1;
+	            		new urlConnect().execute(); //REejecutamos la tarea (GET)
+	            	}
+	            } else if(res.hasCookie("fs_block_id")) { // No tiene "ad_user_login" pero si "fs_block_id" --> Cookie NO vencida
+	            	startOk2(response, mycontext);
+	            } else if(res.hasCookie("ad_session_id")) { // Usuario y contrase�a incorrectos. No tiene ni "ad_user_login" ni "fs_block_id"
+	            	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
+	            	Editor editor = prefs.edit();
+		            editor.remove("cookies");
+	                editor.commit();
+	                cookies = null; //eliminamos la cookie
+	                a = a+1; // Aumentamos el contador
+	                Log.d("Cookie", "COOKIE VENCIDA");
+	                new urlConnect().execute(); //REejecutamos la tarea (POST)
+
+	            } else if(res.hasCookie("tupi_style") || res.hasCookie("zen_style")) { // Cookie correcta, sesi�n POST ya habilitada. GET correcto. Procede.
+	            	startOk2(response, mycontext);
+	            }
+	        } else {
+	        	Log.d("Exception", "Timeout2");
+	        	startOk3(mycontext, 6, false);
+	        }
+        }
+    }
+    
+    private void startOk2(Response response, Context context) {
+    	String out = "";  
+    	Intent bcIntent = new Intent();
+        bcIntent.setAction(RESPONSE);
+        try {
+			out = response.parse().body().toString();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        bcIntent.putExtra("response", out);
+        sendBroadcast(bcIntent);
+    	}
+    
+    private void startOk3(Context context, int id, Boolean status) {
+    	Intent bcIntent = new Intent();
+        bcIntent.setAction(RESPONSE);
+        if(status) bcIntent.putExtra("response", "cont");
+        if(!status) bcIntent.putExtra("response", "oops");
+        bcIntent.putExtra("id", id);
+        sendBroadcast(bcIntent);
+    	}
+    
+    public void setData() throws IOException, SocketTimeoutException {
+    	
+    	Document av = Jsoup.connect("https://aulavirtual.uv.es/dotlrn/index").timeout(10*1000).get();
+	    	
+		Elements inputs = av.select("input[name=__confirmed_p], input[name=__refreshing_p], input[name=form:id], input[name=form:mode], input[name=formbutton:ok], input[name=hash], input[name=time], input[name=token_id]");
+			
+		Response resp = Jsoup.connect("https://aulavirtual.uv.es/register/")
+			    .data("__confirmed_p", inputs.get(2).attr("value"), "__refreshing_p", inputs.get(3).attr("value"), "form:id", inputs.get(1).attr("value"), "form:mode", inputs.get(0).attr("value"), "formbutton:ok", inputs.get(7).attr("value"), "hash", inputs.get(6).attr("value"), "time", inputs.get(4).attr("value"), "return_url", url, "token_id", inputs.get(5).attr("value"), "username", user, "password", pass)
+			    .method(Method.POST)
+			    .timeout(10*1000)
+			    .execute();
+		res = resp; //IMPORTANTE verificará si el usuario ha logueado o por el contrario ha dado una contraseña o usuario incorrecto(s)
+		cookies = resp.cookies();
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
+        Editor editor = prefs.edit();
+        editor.putString("cookies", cookies.toString());
+        editor.commit();
+        Log.d("Connect", "Conectando sin cookies");
+
+    }
+	
+	public void connectGet() throws IOException, SocketTimeoutException {
+		Response resp = Jsoup.connect("https://aulavirtual.uv.es"+ url).cookies(cookies).method(Method.GET).timeout(10*1000).execute();
+		res = resp;
+		Log.d("Connect", "Conectando con cookies");
+		Log.d("URL", "https://aulavirtual.uv.es"+url);
+		Log.d("COOKIE GET", resp.cookies().toString());
+	}
+	
+	/**
+	 * Codifica la URL del archivo, lo descarga (si no existe) y lo guarda en Almacenamiento externo (SDCARD)//Android/data/com.jp.miaulavirtual/files
+	 * @return String - Tama�o del archivo en formato del SI
+	 * @throws IOException
+	 */
+    public void getDoc(Context mycontext) throws IOException, SocketTimeoutException {
+    	URI uri;
+    	Log.d("Document", url);
+    	String request = null;
+		// Codificamos la URL del archivo
+    	try {
+			uri = new URI(
+				    "https", 
+				    "aulavirtual.uv.es", 
+				    url,
+				    null);
+			request = uri.toASCIIString();
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	Log.d("Document", request);
+    	Log.d("Document", url_back);
+    	
+    	// Recheck cookie isn't expire
+    	Response resp = Jsoup.connect("https://aulavirtual.uv.es"+ url_back).cookies(cookies).method(Method.GET).timeout(10*1000).execute();
+    	res = resp;
+    	Log.d("Document", "Respuesta2");
+    	
+    	// Action in response of cookie checking
+    	if(res.hasCookie("ad_user_login")) { // El usuario y la contraseña son correctas al renovar la COOKIE (NO PUEDEN SER INCORRECTOS, YA ESTABA LOGUEADO)
+        	Log.d("Cookie", String.valueOf(a));
+        	if(a==2) {
+        		a = 1;
+        		new docDownload().execute(); //REejecutamos la tarea docDownload
+        	}
+    	} else if(res.hasCookie("fs_block_id")) {
+    		downloadFile(request);  
+        } else if(res.hasCookie("ad_session_id")) { // Cookie Vencida
+        	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
+        	Editor editor = prefs.edit();
+        	// Cookie Vencida
+            editor.remove("cookies");
+            editor.commit();
+            cookies = null; // eliminamos la cookie
+            a = a+1; // Aumentamos el contador
+            Log.d("Cookie", "COOKIE VENCIDA");
+            new docDownload().execute(); //REejecutamos la tarea (POST)
+        } else if(res.hasCookie("tupi_style") || res.hasCookie("zen_style")) { // Cookie correcta, sesi�n POST ya habilitada. GET correcto. Procede.
+        	downloadFile(request);
+        }
+    }
+    
+    public void downloadFile(String request) {
+    	URL url2;
+	    URLConnection conn;
+	    int lastSlash;
+	    Long fileSize = null;
+	    BufferedInputStream inStream;
+	    BufferedOutputStream outStream;
+	    FileOutputStream fileStream;
+	    String cookies = cookieFormat(scookie); // format cookie for URL setRequestProperty
+	    final int BUFFER_SIZE = 23 * 1024;
+	    int id = 1;
+	    
+	    File file = null;
+		
+		Log.d("Document", "2ª respueesta");
+	    try
+	    {
+    		// Just resources
+    		lastSlash = url.toString().lastIndexOf('/');
+    		
+    		// Directory creation
+    		String root = Environment.getExternalStorageDirectory().toString();
+    	    File myDir = new File(root + "/Android/data/com.jp.miaulavirtual/files");    
+    	    myDir.mkdirs();
+    	    
+    	    // Document creation
+    	    String name = url.toString().substring(lastSlash + 1);
+    	    file = new File (myDir, name);
+    	    fileSize = (long) file.length();
+    	    
+    	    // Check if we have already downloaded the whole file
+    	    if (file.exists ()) {
+    	    	dialog.setProgress(100); // full progress if file already donwloaded
+    	    } else {
+		        // Start the connection with COOKIES (we already verified that the cookies aren't expired and we can use them)
+	    	    url2 = new URL(request);
+		        conn = url2.openConnection();
+		        conn.setUseCaches(false);
+		        conn.setRequestProperty("Cookie", cookies);
+		        conn.setConnectTimeout(10*1000);
+		        conn.setReadTimeout(20*1000);
+		        fileSize = (long) conn.getContentLength();
+		        
+		        // Check if we have necesary space
+		        if(fileSize >= myDir.getUsableSpace()) { task_status = false; id = 2;
+		        } else {
+		        	
+			        // Start downloading
+			        inStream = new BufferedInputStream(conn.getInputStream());
+			        fileStream = new FileOutputStream(file);
+			        outStream = new BufferedOutputStream(fileStream, BUFFER_SIZE);
+			        byte[] data = new byte[BUFFER_SIZE];
+			        int bytesRead = 0;
+			        int setMax = (conn.getContentLength()/1024);
+			        dialog.setMax(setMax);
+		
+			        while(task_status && (bytesRead = inStream.read(data, 0, data.length)) >= 0)
+			        {
+			            outStream.write(data, 0, bytesRead);
+			            // update progress bar
+			            dialog.incrementProgressBy((int)(bytesRead/1024));
+			        }
+			        
+			        // Delete archive if cancel pressed
+			        if(!task_status) { file.delete(); id=0; }
+			        
+			        // Close stream
+			        outStream.close();
+			        fileStream.close();
+			        inStream.close();
+		        }
+    	    } 
+	    }
+	    catch(MalformedURLException e) // Invalid URL
+	    {
+	    	task_status = false;
+	    	if(file.exists ()) { file.delete(); }
+	    	id = 3;
+	    }
+	    catch(FileNotFoundException e) // FIle not found
+	    {
+	    	task_status = false;
+	    	if(file.exists ()) { file.delete(); }
+	    	id = 4;
+	    }
+	    catch(SocketTimeoutException e) // time out
+	    {
+	    	task_status = false;
+	    	if(file.exists ()) { file.delete(); }
+	    	id = 6;
+	    }
+	    catch(Exception e) // General error
+	    {
+	    	task_status = false;
+	    	if(file.exists ()) { file.delete(); }
+	    	id = 5;
+	    }
+	    
+	    // notify completion
+	    startOk3(mycontext, id, task_status);
+
+    }	
+	
+    /**
+     * Pasa cookies en formato String {cookies} a Map que es el formato utilizado poara insertar cookies por JSoup
+     * @param scookie
+     * @return Map<String, String>
+     */
+	public Map<String, String> toMap(String scookie) {
+		Map<String, String> cookies = new LinkedHashMap<String, String>();
+		String[] split = scookie.split(" *[=,^{}$] *");
+		int i = 1;
+		while(i<split.length-1) {
+			//System.out.println(i);
+			cookies.put(split[i], split[i+1]);
+			//i++;
+			i=i+2;
+		}
+		return cookies;
+	}
+	
+	public String cookieFormat(String scookie) {
+		String [] arrayc = scookie.split(" *[=,^{}$] *");
+		String cookies ="";
+		for(int a = 1; a<(int)arrayc.length; a++) {
+			cookies += arrayc[a]+"="+arrayc[a+1]+"; ";
+			a = a+1;
+		}
+		cookies = cookies.trim();
+		return cookies;
+	}
+	
+	/**
+	 * Pasa Bytes a formate legible del SI (si = true) o del Sistema Binario
+	 * @param bytes
+	 * @param si
+	 * @return String
+	 */
+	public static String humanReadableByteCount(long bytes, boolean si) {
+	    int unit = si ? 1000 : 1024;
+	    if (bytes < unit) return bytes + " B";
+	    int exp = (int) (Math.log(bytes) / Math.log(unit));
+	    String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
+	    return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+	}
 }

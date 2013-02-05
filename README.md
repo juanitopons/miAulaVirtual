@@ -48,7 +48,7 @@ None yet
 + <b>SOLVED: <i>Added support for ZEN style cookie</i></b> - Error getting resoucerse identifier
 
 ## Upcoming features ##
-+ Task management
++ Task management (Sync Students tasks with Google Tasks)
 + Cool calendar (?)
 + Webmail integration (?)
 + Remote repository of college notes created by students through the application (?)
