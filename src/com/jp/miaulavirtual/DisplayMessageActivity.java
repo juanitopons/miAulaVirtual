@@ -33,6 +33,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -96,7 +98,7 @@ public class DisplayMessageActivity extends Activity {
 	//Respuesta
 	Response res;
     
-	int a = 0; //Control n� de tareas por servicio 1 = GET || POST 2 = GET cookie vencida, POST, GET.
+	int a = 0; //Control n� de tareas 1 = GET || POST 2 = GET cookie vencida, POST, GET.
 	String scookie;
 	Map<String, String> cookies; //Obtener la cookie del cache
 	
@@ -124,6 +126,7 @@ public class DisplayMessageActivity extends Activity {
 	Boolean isDocument = false; // Maneja si la URL es de tipo Documento (cuando type!= (0, 1)) o tipo URL ya que debemos hacer tareas diferentes para cada uno.
 	int docPosition = 0; // Necesitamos saber la posición del archivo clickeado para poder mandar la URL desde fuera del Listener
 	ProgressDialog dialog;
+	TextView headerTitle;
 	
 	// Interface
 	ListView lstDocs;
@@ -136,64 +139,85 @@ public class DisplayMessageActivity extends Activity {
 	    @Override
 	    public void onReceive(Context context, Intent intent) {
 	        if (intent.getAction().equals(DisplayMessageActivity.RESPONSE)) {
-	        		fServ = intent.getStringExtra("response");
-	        		if(fServ.equals("cont")) {
-	        			Log.d("Exception", "Hola1");
-	        			dialog.dismiss();
-	        			isDocument = false;
-	        			Toast.makeText(getBaseContext(),getString(R.string.toast_1), Toast.LENGTH_SHORT).show();
-	        		} else if(fServ.equals("oops")) {
-	        			Log.d("Exception", "Hola2");
-	        			dialog.dismiss();
-	        			isDocument = false;
-	        			int id =  intent.getIntExtra("id", 5);
-	        			String msg = null;
-	        		    switch(id) {
-	        		    case 0: // cancelled
-	        		    	msg = getString(R.string.toast_0);
-	        		    	break;
-	        		    case 2: // not enough free storage space
-	        		    	msg = getString(R.string.toast_2);
-	        		    	break;
-	        		    case 3: // invalid URL
-	        		    	msg = getString(R.string.toast_3);
-	        		    	break;
-	        		    case 4: // file not found
-	        		    	msg = getString(R.string.toast_4);
-	        		    	break;
-	        		    case 5: // general error
-	        		    	msg = getString(R.string.toast_5);
-	        		    	break;
-	        		    case 6: // conection problems
-	        		    	msg = getString(R.string.toast_6);
-	        		    	afterBroadcaster2();
-	        		    	break;
-	        		    } 
-	        			Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT).show();
-	        		} else {
-	        			if(isTheHome) {
-		            		if(docPosition == 0) comunidades = true; //Click Comunidades y otros
-		            		onUrl.add(first.get(1)[docPosition].toString());
-		            		onName.add(first.get(0)[docPosition].toString());
-		            	} else { 
-		            		if(docPosition==0){ //Click atrás
-		            			onUrl.remove(onUrl.size() - 1); //Quitamos la URL actual
-		            			onName.remove(onName.size() - 1); //Quitamos el Nombre actual
-		            			comunidades = false;
-		            			if(onUrl.size()>=2 && (onUrl.get(0).toString().equals(onUrl.get(1).toString()))) comunidades = true;
-		            		} else {
-		            			onUrl.add(first.get(1)[docPosition].toString());
-		                    	onName.add(first.get(0)[docPosition].toString());
-		            		}
-		            	}
-		        		afterBroadcaster(fServ);
-		        		Toast.makeText(getBaseContext(),"GET hecho!", Toast.LENGTH_SHORT).show();
-		        		Log.d("Exception", "Hola3");
-	        		}
-	        		Log.d("Exception", "Hola0");
+	        	fServ = intent.getStringExtra("response");
+        		if(fServ.equals("cont")) {
+        			dialog.dismiss();
+        			isDocument = false;
+        			Toast.makeText(getBaseContext(),getString(R.string.toast_1), Toast.LENGTH_SHORT).show();
+        		} else if(fServ.equals("oops")) {
+        			dialog.dismiss();
+        			isDocument = false;
+        			int id =  intent.getIntExtra("id", 5);
+        			String msg = null;
+        		    switch(id) {
+        		    case 0: // cancelled
+        		    	msg = getString(R.string.toast_0);
+        		    	break;
+        		    case 2: // not enough free storage space
+        		    	msg = getString(R.string.toast_2);
+        		    	break;
+        		    case 3: // invalid URL
+        		    	msg = getString(R.string.toast_3);
+        		    	break;
+        		    case 4: // file not found
+        		    	msg = getString(R.string.toast_4);
+        		    	break;
+        		    case 5: // general error
+        		    	msg = getString(R.string.toast_5);
+        		    	break;
+        		    case 6: // conection problems
+        		    	msg = getString(R.string.toast_6);
+        		    	afterBroadcaster2();
+        		    	break;
+        		    } 
+        			Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT).show();
+        		} else {
+        			if(isTheHome) {
+	            		if(docPosition == 0) comunidades = true; //Click Comunidades y otros
+	            		onUrl.add(first.get(1)[docPosition].toString());
+	            		onName.add(first.get(0)[docPosition].toString());
+	            	} else { 
+	            		if(docPosition==0){ //Click atrás
+	            			onUrl.remove(onUrl.size() - 1); //Quitamos la URL actual
+	            			onName.remove(onName.size() - 1); //Quitamos el Nombre actual
+	            			comunidades = false;
+	            			if(onUrl.size()>=2 && (onUrl.get(0).toString().equals(onUrl.get(1).toString()))) comunidades = true;
+	            		} else {
+	            			onUrl.add(first.get(1)[docPosition].toString());
+	                    	onName.add(first.get(0)[docPosition].toString());
+	            		}
+	            	}
+	        		afterBroadcaster(fServ);
+	        		Toast.makeText(getBaseContext(),"GET hecho!", Toast.LENGTH_SHORT).show();
+        		}
 	        }
 	    }
 	}
+	
+	/**
+	 * We need to save the Response of the connection for recreate it when activity change orientation
+	 */
+	@Override
+	public Object onRetainNonConfigurationInstance() {
+		//---save whatever you want here; it takes in an Object type---
+		
+		// we pass the Arraylist to String[] so we can put it, after, inside de 'first' and then can pass the ALL the data needed with one Object
+		String [] urls = new String[onUrl.size()-1];
+		String [] names = new String[onName.size()-1];
+		urls = onUrl.toArray(urls);
+		names = onName.toArray(names);
+		first2.add(urls);
+		first2.add(names);
+		
+		// Save the cookie
+		String[] cookie_values = cookies.values().toArray(new String[0]);
+		String[] cookie_keys = cookies.keySet().toArray(new String[0]);
+		first2.add(cookie_keys);
+		first2.add(cookie_values);
+		
+		return(first2);
+	}
+
 	
 	@SuppressLint("NewApi")
 	@Override
@@ -202,22 +226,55 @@ public class DisplayMessageActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_display_message);
 		// Make sure we're running on Honeycomb or higher to use ActionBar APIs
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            // Show the Up button in the action bar.
-            getActionBar().setDisplayHomeAsUpEnabled(true);
-        }
         Log.d(tag, "In the onCreate() event");
         
         // creating connection detector class instance
         cd = new ConnectionDetector(getApplicationContext());
         
-        // Datos por defecto de la primera respuesta
+        // general context
         mycontext = this;
+        
+        // Get the onRetainNonConfigurationInstance()
+        final ArrayList<Object[]> first3 = (ArrayList<Object[]>) getLastNonConfigurationInstance();
+        
+        if(first3 != null) { /* if exists it's because there was a orientation change. We need to reformat as we need the data passed */
+            // onUrl and onName to ArrayList
+            onUrl = new ArrayList<String>(Arrays.asList((String[]) first3.get(3))); // hierarchical urls
+            onName = new ArrayList<String>(Arrays.asList((String[]) first3.get(4))); // hierarchical names
+            first3.remove(3);
+            first3.remove(3);
+            
+            // cookies to Map
+            cookies = new HashMap<String, String>();
+            for (int i = 0; i < first3.get(3).length; i++) {
+		          cookies.put(first3.get(3)[i].toString(), first3.get(4)[i].toString());
+		    }
+            first3.remove(3);
+            first3.remove(3);
+            
+        	// first 3 = first 1
+            for (Object[] objects: first3) first.add((Object[])objects.clone());
+            // first 3 = first 2
+            for (Object[] objects: first3) first2.add((Object[])objects.clone());
+            first3.clear();
+            
+            // Update de subtitle
+            headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
+            headerTitle.setTextColor(getResources().getColor(R.color.list_title));
+            headerTitle.setTypeface(null, 1);
+            headerTitle.setText(onName.get(onName.size() - 1));
+            
+            // retrieve the same View before change orientation
+            lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
+            lstAdapter = new AdaptadorDocs(this, first2);
+            lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
+
+        } else {
+        
         onUrl.add("/dotlrn/?page_num=2");
         onName.add("Documentos");
         
         // Actualizamos nombre de LblSubTitulo
-        final TextView headerTitle;
         headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
         headerTitle.setTextColor(getResources().getColor(R.color.list_title));
         headerTitle.setTypeface(null, 1);
@@ -256,6 +313,7 @@ public class DisplayMessageActivity extends Activity {
         lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
         lstAdapter = new AdaptadorDocs(this, first2);
         lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
+        }
         
         lstDocs.setOnItemClickListener(new OnItemClickListener() {
             @Override
@@ -452,11 +510,14 @@ public class DisplayMessageActivity extends Activity {
         	isHome = false;
 
         }
-		first.add(0, asigsToArray(elements, isHome, comunidades)); //Array con los  nombres de Carpetas, Asignaturas y Archivos
+        first.remove(0);
+        first.remove(0);
+        first.remove(0);
+		first.add(asigsToArray(elements, isHome, comunidades)); //Array con los  nombres de Carpetas, Asignaturas y Archivos
 		String s[] = urlsToArray(elements, isHome, comunidades);
-		first.add(1, s);
+		first.add(s);
 		int mysize =  s.length;
-		first.add(2, typeToArray(elements, isHome, comunidades, mysize));
+		first.add(typeToArray(elements, isHome, comunidades, mysize));
 		
 		//Copia de FIRST que puede ser borrada
         for (Object[] objects: first) {
