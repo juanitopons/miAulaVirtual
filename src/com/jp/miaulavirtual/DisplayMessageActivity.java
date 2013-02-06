@@ -60,7 +60,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -84,53 +83,52 @@ import android.widget.Toast;
 public class DisplayMessageActivity extends Activity {
 
     // flag for Internet connection status
-    Boolean isInternetPresent = false;
+    private Boolean isInternetPresent = false;
     // Connection detector class
     ConnectionDetector cd;
 	
 	//Variables POST
-	String url;
+    private String url;
 	public final static String RESPONSE = "com.jp.miaulavirtual.RESPONSE";
 	
-	String url_back;
-	Boolean task_status = true;
+	private String url_back;
+	private Boolean task_status = true;
 	
 	//Respuesta
-	Response res;
+	private Response res;
     
-	int a = 0; //Control n� de tareas 1 = GET || POST 2 = GET cookie vencida, POST, GET.
-	String scookie;
-	Map<String, String> cookies; //Obtener la cookie del cache
+	private int a = 0; //Control n� de tareas 1 = GET || POST 2 = GET cookie vencida, POST, GET.
+	private String scookie;
+	private Map<String, String> cookies; //Obtener la cookie del cache
 	
 	// Activity
-	Context mycontext;
+	private Context mycontext;
 	
-	String tag = "Lifecycle2";
+	private String tag = "Lifecycle2";
 	
 	// User data
-	String user;
-	String pass;
+	private String user;
+	private String pass;
 	
 	// Valores del HOME de documentos
-	Document doc;
-	Elements elements;
-	String fServ; //Respuesta primera (home)
-	ArrayList<Object[]> first = new ArrayList<Object[]>(); // Primera respuesta (home)
-	ArrayList<Object[]> first2 = new ArrayList<Object[]>();
+	private Document doc;
+	private Elements elements;
+	private String fServ; //Respuesta primera (home)
+	private ArrayList<Object[]> first = new ArrayList<Object[]>(); // Primera respuesta (home)
+	private ArrayList<Object[]> first2 = new ArrayList<Object[]>();
 	
 	//Nombres URL's y Types por las que se pasa y Boolean necesarios
-	ArrayList<String> onUrl = new ArrayList<String>();
-	ArrayList<String> onName = new ArrayList<String>();
-	Boolean isTheHome;
-	Boolean comunidades = false; // URL principal documentos y comunidades = true -> Carpeta Comunidades url /clubs/; Sino carpeta Principal, url-> /classes/ y otras
-	Boolean isDocument = false; // Maneja si la URL es de tipo Documento (cuando type!= (0, 1)) o tipo URL ya que debemos hacer tareas diferentes para cada uno.
-	int docPosition = 0; // Necesitamos saber la posición del archivo clickeado para poder mandar la URL desde fuera del Listener
-	ProgressDialog dialog;
-	TextView headerTitle;
+	private ArrayList<String> onUrl = new ArrayList<String>();
+	private ArrayList<String> onName = new ArrayList<String>();
+	private Boolean isTheHome;
+	private Boolean comunidades = false; // URL principal documentos y comunidades = true -> Carpeta Comunidades url /clubs/; Sino carpeta Principal, url-> /classes/ y otras
+	private int docPosition = 0; // Necesitamos saber la posición del archivo clickeado para poder mandar la URL desde fuera del Listener
+	private ProgressDialog dialog;
+	private TextView headerTitle;
 	
 	// Interface
-	ListView lstDocs;
-	AdaptadorDocs lstAdapter;
+	private ListView lstDocs;
+	private AdaptadorDocs lstAdapter;
 	
 	private DataUpdateReceiver dataUpdateReceiver;
 	
@@ -142,24 +140,26 @@ public class DisplayMessageActivity extends Activity {
 	        	fServ = intent.getStringExtra("response");
         		if(fServ.equals("cont")) {
         			dialog.dismiss();
-        			isDocument = false;
         			Toast.makeText(getBaseContext(),getString(R.string.toast_1), Toast.LENGTH_SHORT).show();
         		} else if(fServ.equals("oops")) {
-        			dialog.dismiss();
-        			isDocument = false;
         			int id =  intent.getIntExtra("id", 5);
         			String msg = null;
+        			Log.d("Broadcaster", String.valueOf(id));
         		    switch(id) {
         		    case 0: // cancelled
+        		    	dialog.dismiss();
         		    	msg = getString(R.string.toast_0);
         		    	break;
         		    case 2: // not enough free storage space
+        		    	dialog.dismiss();
         		    	msg = getString(R.string.toast_2);
         		    	break;
         		    case 3: // invalid URL
+        		    	dialog.dismiss();
         		    	msg = getString(R.string.toast_3);
         		    	break;
         		    case 4: // file not found
+        		    	dialog.dismiss();
         		    	msg = getString(R.string.toast_4);
         		    	break;
         		    case 5: // general error
@@ -167,6 +167,16 @@ public class DisplayMessageActivity extends Activity {
         		    	break;
         		    case 6: // conection problems
         		    	msg = getString(R.string.toast_6);
+        		    	afterBroadcaster2();
+        		    	break;
+        		    case 7: // conection problems 2
+        		    	dialog.dismiss();
+        		    	msg = getString(R.string.toast_6);
+        		    	afterBroadcaster2();
+        		    	break;
+        		    case 8: // general error 2
+        		    	dialog.dismiss();
+        		    	msg = getString(R.string.toast_5);
         		    	afterBroadcaster2();
         		    	break;
         		    } 
@@ -321,7 +331,6 @@ public class DisplayMessageActivity extends Activity {
             	isInternetPresent = cd.isConnectingToInternet();
             	if(isInternetPresent) {
 	            	if(!(first.get(2)[position].toString().equals("0")) && !(first.get(2)[position].toString().equals("1")) && !(first.get(2)[position].toString().equals("6"))) {
-	            		isDocument = true;
 	            		docPosition = position;
 	            		Log.d("TIPO", "DOCUMENTO");
 	            		// ProgressDialog (salta para mostrar el proceso del archivo descargándose)
@@ -333,7 +342,6 @@ public class DisplayMessageActivity extends Activity {
 	            		new docDownload().execute();
 
 	            	} else {
-	            		isDocument = false;
 		            	if(onUrl.get(onUrl.size() - 1) == "/dotlrn/?page_num=2" && !comunidades){
 		                	isTheHome = true;
 		                } else {
@@ -531,6 +539,10 @@ public class DisplayMessageActivity extends Activity {
 	}
 	
 	public void afterBroadcaster2() {
+		//Copia de FIRST que puede ser borrada
+        for (Object[] objects: first) {
+        first2.add((Object[])objects.clone());
+        }
 		lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
         lstAdapter = new AdaptadorDocs(this, first2);
         lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
@@ -766,7 +778,7 @@ public class DisplayMessageActivity extends Activity {
             		startOk3(mycontext, 6, false);
             	}catch(IOException e)
             	{
-            		startOk3(mycontext, 6, false);
+            		startOk3(mycontext, 5, false);
             	}
         		Log.d("Cookie", "HAY COOKIE!");
         	} else {
@@ -777,7 +789,7 @@ public class DisplayMessageActivity extends Activity {
             		startOk3(mycontext, 6, false);
             	}catch(IOException e)
             	{
-            		startOk3(mycontext, 6, false);
+            		startOk3(mycontext, 5, false);
             	}
         	}
             return null;
@@ -899,6 +911,7 @@ public class DisplayMessageActivity extends Activity {
         if(status) bcIntent.putExtra("response", "cont");
         if(!status) bcIntent.putExtra("response", "oops");
         bcIntent.putExtra("id", id);
+        Log.d("StartOk3", String.valueOf(id));
         sendBroadcast(bcIntent);
     	}
     
@@ -1073,15 +1086,15 @@ public class DisplayMessageActivity extends Activity {
 	    {
 	    	task_status = false;
 	    	if(file.exists ()) { file.delete(); }
-	    	id = 6;
+	    	id = 7;
 	    }
 	    catch(Exception e) // General error
 	    {
 	    	task_status = false;
 	    	if(file.exists ()) { file.delete(); }
-	    	id = 5;
+	    	id = 8;
 	    }
-	    
+	    Log.d("StartOk3", "¿Como he llegado hasta aquí?");
 	    // notify completion
 	    startOk3(mycontext, id, task_status);
 
