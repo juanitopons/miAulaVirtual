@@ -59,6 +59,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -71,6 +72,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
@@ -139,7 +141,6 @@ public class DisplayMessageActivity extends Activity {
 	        if (intent.getAction().equals(DisplayMessageActivity.RESPONSE)) {
 	        	fServ = intent.getStringExtra("response");
         		if(fServ.equals("cont")) {
-        			dialog.dismiss();
         			Toast.makeText(getBaseContext(),getString(R.string.toast_1), Toast.LENGTH_SHORT).show();
         		} else if(fServ.equals("oops")) {
         			int id =  intent.getIntExtra("id", 5);
@@ -198,7 +199,6 @@ public class DisplayMessageActivity extends Activity {
 	            		}
 	            	}
 	        		afterBroadcaster(fServ);
-	        		Toast.makeText(getBaseContext(),"GET hecho!", Toast.LENGTH_SHORT).show();
         		}
 	        }
 	    }
@@ -280,51 +280,58 @@ public class DisplayMessageActivity extends Activity {
             lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
 
         } else {
+        	
+            // cookies
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
+            scookie = prefs.getString("cookies", ""); //�Existe cookie?
+    	    if(scookie!="") {
+    	    	cookies = toMap(scookie); //Si existe cookie la pasamos a MAP
+    	    }
         
-        onUrl.add("/dotlrn/?page_num=2");
-        onName.add("Documentos");
-        
-        // Actualizamos nombre de LblSubTitulo
-        headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
-        headerTitle.setTextColor(getResources().getColor(R.color.list_title));
-        headerTitle.setTypeface(null, 1);
-        headerTitle.setText(onName.get(onName.size() - 1));
-        
-        //Recibimos primera llamada al crear la Actividad
-        Intent intent = getIntent();
-        
-	    // Datos de usuario
-	    user = intent.getStringExtra("user");
-	    pass = intent.getStringExtra("pass");
-	    
-	    // Recibimos datos HOME
-        fServ = intent.getStringExtra("out");
-		doc = Jsoup.parse(fServ);
-		
-		
-        try {
-        	elements = scrap(doc);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        
-        first.add(asigsToArray(elements, true, comunidades)); // Añadimos el Array con los  nombres de Carpetas, Asignaturas y Archivos al ArrayList - [0]
-        String s[] = urlsToArray(elements, true, comunidades);
-        first.add(s); // Añadimos el Array con las  URLS al ArrayList - [1]
-        int mysize = s.length;
-        first.add(typeToArray(elements, true, comunidades, mysize)); // Añadimos el Array con los TYPES al ArrayList - [2]
-        
-        //Copia de FIRST que puede ser borrada
-        for (Object[] objects: first) {
-        first2.add((Object[])objects.clone());
-        }
-
-        lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
-        lstAdapter = new AdaptadorDocs(this, first2);
-        lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
-        }
-        
+	        onUrl.add("/dotlrn/?page_num=2");
+	        onName.add("Documentos");
+	        
+	        // Actualizamos nombre de LblSubTitulo
+	        headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
+	        headerTitle.setTextColor(getResources().getColor(R.color.list_title));
+	        headerTitle.setTypeface(null, 1);
+	        headerTitle.setText(onName.get(onName.size() - 1));
+	        
+	        //Recibimos primera llamada al crear la Actividad
+	        Intent intent = getIntent();
+	        
+		    // Datos de usuario
+		    user = intent.getStringExtra("user");
+		    pass = intent.getStringExtra("pass");
+		    
+		    // Recibimos datos HOME
+	        fServ = intent.getStringExtra("out");
+			doc = Jsoup.parse(fServ);
+			
+			
+	        try {
+	        	elements = scrap(doc);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	        
+	        first.add(asigsToArray(elements, true, comunidades)); // Añadimos el Array con los  nombres de Carpetas, Asignaturas y Archivos al ArrayList - [0]
+	        String s[] = urlsToArray(elements, true, comunidades);
+	        first.add(s); // Añadimos el Array con las  URLS al ArrayList - [1]
+	        int mysize = s.length;
+	        first.add(typeToArray(elements, true, comunidades, mysize)); // Añadimos el Array con los TYPES al ArrayList - [2]
+	        
+	        //Copia de FIRST que puede ser borrada
+	        for (Object[] objects: first) {
+	        first2.add((Object[])objects.clone());
+	        }
+	
+	        lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
+	        lstAdapter = new AdaptadorDocs(this, first2);
+	        lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
+	    }
+	        
         lstDocs.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> a, View v, int position, long id) { //Al clicar X item de la lista
@@ -758,15 +765,7 @@ public class DisplayMessageActivity extends Activity {
 	/* TASKS OR SERVICES */
 	
 	private class docDownload extends AsyncTask<Void, Integer, Void> {
-		protected docDownload() {
-    		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
-    	    scookie = prefs.getString("cookies", ""); //�Existe cookie?
-    	    if(scookie!="") {
-    	    	Log.d("Cookie", "Cookie string:" + scookie);
-    	    	cookies = toMap(scookie); //Si existe cookie la pasamos a MAP para luego procesar el GET con la cookie
-    	    }
-    		// ProgressDialog (salta para mostrar el proceso del archivo descarg�ndose)
-    	}
+		protected docDownload() {}
 		
     	protected Void doInBackground(Void... params) {
         	if(cookies != null) {
@@ -821,14 +820,7 @@ public class DisplayMessageActivity extends Activity {
     }
     
     private class urlConnect extends AsyncTask<Void, Integer, Response> {
-    	protected urlConnect() {
-    		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
-    	    scookie = prefs.getString("cookies", ""); //¿Is there saved cookie?
-    	    if(scookie!="") {
-    	    	Log.d("Cookie", "Cookie string:" + scookie);
-    	    	cookies = toMap(scookie); //Si existe cookie la pasamos a MAP para luego procesar el GET con la cookie
-    	    }
-    	}
+    	protected urlConnect() {}
     	
     	protected Response doInBackground(Void... params) {
         	//Mirar si hay datos en cache, si los hay, cogerlos y hacer el get()
@@ -1060,15 +1052,31 @@ public class DisplayMessageActivity extends Activity {
 			            dialog.incrementProgressBy((int)(bytesRead/1024));
 			        }
 			        
-			        // Delete archive if cancel pressed
-			        if(!task_status) { file.delete(); id=0; }
-			        
 			        // Close stream
 			        outStream.close();
 			        fileStream.close();
 			        inStream.close();
-		        }
-    	    } 
+			        
+			        // Delete file if Cancel button
+			        if(!task_status) file.delete(); id=0;
+			        
+			    }
+		    }
+    	    // Open file
+	        if(task_status) {
+	        	Log.d("Type", "Hola2");
+	        	dialog.dismiss();
+                Intent intent = new Intent();
+                intent.setAction(android.content.Intent.ACTION_VIEW);
+              
+                MimeTypeMap mime = MimeTypeMap.getSingleton();
+                String ext=file.getName().substring(file.getName().indexOf(".")+1);
+                String type = mime.getMimeTypeFromExtension(ext);
+                Log.d("Type", type);
+             
+                intent.setDataAndType(Uri.fromFile(file),type);
+                startActivity(intent);
+	        }
 	    }
 	    catch(MalformedURLException e) // Invalid URL
 	    {

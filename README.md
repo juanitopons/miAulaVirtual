@@ -25,20 +25,21 @@ Android version compatibility: 2.0 and onward
 + Subjec regex pattern clean and replace (available desactivation through 'Preferences')
 
 ## To do ##
-+ Save instance of the activity on screen orientation change
-+ Change Android back button functionality: For going hierarchically back in navigation and not to exit the application
-+ Add internet 3G, WIFI (not) access exception - <b><i>DONE</i></b>
-+ Add virtual classroom 'down' (offline or unreachable) exception (Response.statusMessage())
-+ Add content provider for the opening of documents after download
 + Remove keyboard just after sending the login
-+ Check SDCARD space before downloading - <b><i>DONE</i></b>
-+ Check if there is SDCARD. 
-+ <b><i>ListView</i> Search<b/>
 + Clean code
-+ Add 'cancel' button while downloading - <b><i>DONE</i></b>
 + Preference option for filtering empty folders
 + Preference option for language (Spanish, Catalan, English)
 + Folder direct access widget
++ <b><i>ListView</i> Search<b/>
++ Restrict orientation change on loading
++ Change Android back button functionality: For going hierarchically back in navigation and not to exit the application
++ Save instance of the activity on screen orientation change <b><i>DONE</i></b>
++ Add internet 3G, WIFI (not) access exception - <b><i>DONE</i></b>
++ Add virtual classroom 'down' (offline or unreachable) exception (Response.statusMessage()) <b><i>DONE</i></b>
++ Add content provider for the opening of documents after download <b><i>DONE</i></b>
++ Check SDCARD space before downloading - <b><i>DONE</i></b>
++ Check if there is SDCARD. <b><i>DONE</i></b>
++ Add 'cancel' button while downloading - <b><i>DONE</i></b>
 
 ## Change Log ##
 None yet
