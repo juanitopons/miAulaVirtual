@@ -34,5 +34,8 @@
     <string name="toast_4">Error: archivo no encontrado!</string>
     <string name="toast_5">Oops..! Ha ocurrido algún error.</string>
     <string name="toast_6">Problemas de conexión&#8230;</string>
+    
+    <!--- FOOTER -->
+    <string name="footer">Copyright 2013 Juan Pons - GNU GPL v3.0 | @juanitopons</string>
 
 </resources>

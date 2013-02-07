@@ -331,7 +331,6 @@ public class MainActivity extends Activity {
 	        		startOk3(mycontext, 6, false);
 	        	}
 	        } else {
-	        	Log.d("Exception", "Timeout2");
 	        		Intent bcIntent = new Intent();
 		            bcIntent.setAction(LOGGED);
 		            bcIntent.putExtra("logged", false);
