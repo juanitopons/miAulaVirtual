@@ -204,6 +204,7 @@ public class DisplayMessageActivity extends Activity {
 	        		afterBroadcaster(fServ);
         		}
         		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        		task_status = true;
 	        }
 	    }
 	}
@@ -435,7 +436,6 @@ public class DisplayMessageActivity extends Activity {
 		    
 		    // Imagen
 		    image = (ImageView)item.findViewById(R.id.folderImage);
-		    Log.d("SWITCH", "Posición " +position+ " Valor: " +data.get(2)[position].toString()+ " Tama�o total: " +String.valueOf(data.get(2).length-1));
 		    switch(Integer.parseInt(data.get(2)[position].toString())) {
 		    case 0: // Atr�s
 		    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)|Sgr\\..+?\\s", "" );
@@ -751,7 +751,6 @@ public class DisplayMessageActivity extends Activity {
 			s = new String[size];
 			s[0] = "6";	
 			while(i<size) {
-				Log.d("get(type)", i+"  Tama�o: " +size);
 				s[i] = "1";
 				i++;
 			}
@@ -885,14 +884,16 @@ public class DisplayMessageActivity extends Activity {
         }
 
         protected void onPostExecute(Response response) {
-            if(res != null) {
+        	if(res != null) {
 	        	if(res.hasCookie("ad_user_login")) { // El usuario y la contrase�a son correctas
 	            	Log.d("Cookie", String.valueOf(a));
 	            	if(a==2) {
 	            		a = 1;
+	            		Log.d("Cookie", "Recargada Cookie, hacemos peticion GET");
 	            		new urlConnect().execute(); //REejecutamos la tarea (GET)
 	            	}
 	            } else if(res.hasCookie("fs_block_id")) { // No tiene "ad_user_login" pero si "fs_block_id" --> Cookie NO vencida
+	            	Log.d("Cookie", "No vencida: GET hecho");
 	            	startOk2(response, mycontext);
 	            } else if(res.hasCookie("ad_session_id")) { // Usuario y contrase�a incorrectos. No tiene ni "ad_user_login" ni "fs_block_id"
 	            	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
@@ -900,7 +901,7 @@ public class DisplayMessageActivity extends Activity {
 		            editor.remove("cookies");
 	                editor.commit();
 	                cookies = null; //eliminamos la cookie
-	                a = a+1; // Aumentamos el contador
+	                a = 2; // Aumentamos el contador
 	                Log.d("Cookie", "COOKIE VENCIDA");
 	                new urlConnect().execute(); //REejecutamos la tarea (POST)
 
@@ -995,7 +996,7 @@ public class DisplayMessageActivity extends Activity {
     	Response resp = Jsoup.connect("https://aulavirtual.uv.es"+ url_back).cookies(cookies).method(Method.GET).timeout(10*1000).execute();
     	res = resp;
     	Log.d("Document", "Respuesta2");
-    	
+    	Log.d("Cookie", res.cookies().toString());
     	// Action in response of cookie checking
     	if(res.hasCookie("ad_user_login")) { // El usuario y la contraseña son correctas al renovar la COOKIE (NO PUEDEN SER INCORRECTOS, YA ESTABA LOGUEADO)
         	Log.d("Cookie", String.valueOf(a));
@@ -1048,6 +1049,7 @@ public class DisplayMessageActivity extends Activity {
     	    // Document creation
     	    String name = url.toString().substring(lastSlash + 1);
     	    file = new File (myDir, name);
+    	    Log.d("Document", name);
     	    fileSize = (long) file.length();
     	    
     	    // Check if we have already downloaded the whole file
@@ -1093,6 +1095,7 @@ public class DisplayMessageActivity extends Activity {
 			        
 			    }
 		    }
+    	    Log.d("Status", String.valueOf(task_status));
     	    // Open file
 	        if(task_status) {
 	        	Log.d("Type", "Hola2");
@@ -1101,11 +1104,23 @@ public class DisplayMessageActivity extends Activity {
                 intent.setAction(android.content.Intent.ACTION_VIEW);
               
                 MimeTypeMap mime = MimeTypeMap.getSingleton();
-                String ext=file.getName().substring(file.getName().indexOf(".")+1);
-                String type = mime.getMimeTypeFromExtension(ext);
-                Log.d("Type", type);
+                // Get extension file
+                String file_s = file.toString();
+                String extension = "";
+
+        		int i = file_s.lastIndexOf('.');
+        		int p = Math.max(file_s.lastIndexOf('/'), file_s.lastIndexOf('\\'));
+
+        		if (i > p) {
+        		    extension = file_s.substring(i+1);
+        		}
+        		
+        		// Get extension reference
+                String doc_type = mime.getMimeTypeFromExtension(extension);
+                
+                Log.d("Type", extension);
              
-                intent.setDataAndType(Uri.fromFile(file),type);
+                intent.setDataAndType(Uri.fromFile(file),doc_type);
                 startActivity(intent);
 	        }
 	    }
@@ -1133,6 +1148,7 @@ public class DisplayMessageActivity extends Activity {
 	    	if(file.exists ()) { file.delete(); }
 	    	id = 8;
 	    }
+	    Log.d("Type", String.valueOf(id));
 	    Log.d("StartOk3", "¿Como he llegado hasta aquí?");
 	    // notify completion
 	    startOk3(mycontext, id, task_status);

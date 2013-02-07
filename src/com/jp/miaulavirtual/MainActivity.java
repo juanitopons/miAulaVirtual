@@ -293,7 +293,6 @@ public class MainActivity extends Activity {
 
     	protected Response doInBackground(Void... params) {
         	//Mirar si hay datos en cache, si los hay, cogerlos y hacer el get()
-        		Log.d("Cookie", "HAY COOKIE!");
         		try {
             		setData();
             	}catch(SocketTimeoutException e)
