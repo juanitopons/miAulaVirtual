@@ -34,10 +34,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.app.Activity;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
 import android.content.BroadcastReceiver;
@@ -47,6 +49,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.util.Log;
+import android.content.pm.ActivityInfo;
 
 
 public class MainActivity extends Activity {
@@ -101,6 +104,7 @@ public class MainActivity extends Activity {
 	        	} else {
 	        		finish();
 	        	}
+	        	setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 	        }
 	    }
 	}
@@ -129,6 +133,19 @@ public class MainActivity extends Activity {
         url = "/dotlrn/?page_num=2";
        
         if(!user.equals("Ninguno")){ //Si el usuario entra a la aplicación y ya está logueado
+        	
+	        /* We don't want change screen orientation while loading petition */
+	        //---get the current display info---
+	        WindowManager wm = getWindowManager();
+	        Display d = wm.getDefaultDisplay();
+	        if (d.getWidth() > d.getHeight()) {
+	        	//---change to landscape mode---
+		        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+	        } else {
+	        	//---change to portrait mode---
+		        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+	        }
+        	
         	setContentView(R.layout.activity_main2); //Content si está logueado - Loader mientras espera el scrap
         	
         	Log.d("DATOS", user);
@@ -219,7 +236,8 @@ public class MainActivity extends Activity {
     }
     
     /** Llamada cuando el usuario hace clic en 'Enviar' */
-    public void sendMessage(View view) {
+    @SuppressWarnings("deprecation")
+	public void sendMessage(View view) {
     	/**
          * Habr� que guardar el Usuario y Contrase�a si es la primera vez que loguea (es la primera vez que loguea porque se envia el SEND.
          * 
@@ -234,6 +252,18 @@ public class MainActivity extends Activity {
 	        editor.putString("myuser", tuser.getText().toString());
 	        editor.putString("mypass", tpass.getText().toString());
 	        editor.commit();
+	        
+	        /* We don't want change screen orientation while loading petition */
+	        //---get the current display info---
+	        WindowManager wm = getWindowManager();
+	        Display d = wm.getDefaultDisplay();
+	        if (d.getWidth() > d.getHeight()) {
+	        	//---change to landscape mode---
+		        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+	        } else {
+	        	//---change to portrait mode---
+		        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+	        }
 	    	
 	        //El usuario ha logueado, ponemos la pantalla de carga
 	        setContentView(R.layout.activity_main2);

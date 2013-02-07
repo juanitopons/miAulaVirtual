@@ -59,6 +59,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -66,12 +67,14 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -200,6 +203,7 @@ public class DisplayMessageActivity extends Activity {
 	            	}
 	        		afterBroadcaster(fServ);
         		}
+        		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 	        }
 	    }
 	}
@@ -259,6 +263,7 @@ public class DisplayMessageActivity extends Activity {
             for (int i = 0; i < first3.get(3).length; i++) {
 		          cookies.put(first3.get(3)[i].toString(), first3.get(4)[i].toString());
 		    }
+            scookie = cookies.toString(); // ¡IMPORTANT!
             first3.remove(3);
             first3.remove(3);
             
@@ -411,7 +416,8 @@ public class DisplayMessageActivity extends Activity {
 	        data.clear();
 	    }
 	    
-	    public View getView(int position, View convertView, ViewGroup parent) {
+	    @SuppressWarnings("deprecation")
+		public View getView(int position, View convertView, ViewGroup parent) {
 	    	View item;
 	    	if(!data.isEmpty()) {
 	    	LayoutInflater inflater = context.getLayoutInflater();
@@ -495,9 +501,22 @@ public class DisplayMessageActivity extends Activity {
 	 
 	        //botoncito desplegable pendiente AQUI
 	    	} else {
-	    			LayoutInflater inflater = context.getLayoutInflater();
-	    	        item = inflater.inflate(R.layout.load_list, null);
-	    	        item.setMinimumHeight(35);
+	    			
+		        /* We don't want change screen orientation while loading petition */
+		        //---get the current display info---
+		        WindowManager wm = getWindowManager();
+		        Display d = wm.getDefaultDisplay();
+		        if (d.getWidth() > d.getHeight()) {
+		        	//---change to landscape mode---
+			        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+		        } else {
+		        	//---change to portrait mode---
+			        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+		        }
+	    		
+	    		LayoutInflater inflater = context.getLayoutInflater();
+	    	    item = inflater.inflate(R.layout.load_list, null);
+	    	    item.setMinimumHeight(35);
 	    	}
 	        return(item);
 	    }
@@ -801,7 +820,8 @@ public class DisplayMessageActivity extends Activity {
                 String.valueOf(progress[0]) + "% scrapped",
                 Toast.LENGTH_LONG).show(); **/
         }
-        protected void onPreExecute() {
+        @SuppressWarnings("deprecation")
+		protected void onPreExecute() {
         	// ProgressDialog (salta para mostrar el proceso del archivo descarg�ndose)
     		dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
     		dialog.setMessage(getString(R.string.process));
@@ -816,6 +836,17 @@ public class DisplayMessageActivity extends Activity {
             		}
             		});
 	        dialog.show();
+	        /* We don't want change screen orientation while loading petition */
+	        //---get the current display info---
+	        WindowManager wm = getWindowManager();
+	        Display d = wm.getDefaultDisplay();
+	        if (d.getWidth() > d.getHeight()) {
+	        	//---change to landscape mode---
+		        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+	        } else {
+	        	//---change to portrait mode---
+		        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+	        }
         }
     }
     

@@ -31,7 +31,7 @@ Android version compatibility: 2.0 and onward
 + Preference option for language (Spanish, Catalan, English)
 + Folder direct access widget
 + <b><i>ListView</i> Search<b/>
-+ Restrict orientation change on loading
++ Restrict orientation change on loading <b><i>DONE</i></b>
 + Change Android back button functionality: For going hierarchically back in navigation and not to exit the application
 + Save instance of the activity on screen orientation change <b><i>DONE</i></b>
 + Add internet 3G, WIFI (not) access exception - <b><i>DONE</i></b>
