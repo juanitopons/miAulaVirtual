@@ -12,6 +12,7 @@
     <string name="bad_data">Usuario o contraseña incorrectos</string>
     
     <!--- DISPLAY -->
+    <string name="panel_error">¡No tienes ninguna carpeta! Esto seguramente es debido a una mala configuración del Panel de Documentos.\n Dirígete a <b>Preferencias</b> para saber más al respecto</string>
 
 	<!--- DOCS -->
 	<string name="mydocs">Mis Documentos</string>

@@ -60,6 +60,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -101,6 +102,7 @@ public class DisplayMessageActivity extends Activity {
 	
 	//Respuesta
 	private Response res;
+	private int elsize; // elements size
     
 	private int a = 0; //Control n� de tareas 1 = GET || POST 2 = GET cookie vencida, POST, GET.
 	private String scookie;
@@ -114,6 +116,7 @@ public class DisplayMessageActivity extends Activity {
 	// User data
 	private String user;
 	private String pass;
+	private String panel; // control de panel number of Documents section
 	
 	// Valores del HOME de documentos
 	private Document doc;
@@ -212,10 +215,10 @@ public class DisplayMessageActivity extends Activity {
 	/**
 	 * We need to save the Response of the connection for recreate it when activity change orientation
 	 */
+	
 	@Override
 	public Object onRetainNonConfigurationInstance() {
 		//---save whatever you want here; it takes in an Object type---
-		
 		// we pass the Arraylist to String[] so we can put it, after, inside de 'first' and then can pass the ALL the data needed with one Object
 		String [] urls = new String[onUrl.size()-1];
 		String [] names = new String[onName.size()-1];
@@ -249,9 +252,14 @@ public class DisplayMessageActivity extends Activity {
         // general context
         mycontext = this;
         
+        // Preferences
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
+        // panel
+    	panel = prefs.getString("panel", "2");
+        
         // Get the onRetainNonConfigurationInstance()
         final ArrayList<Object[]> first3 = (ArrayList<Object[]>) getLastNonConfigurationInstance();
-        
+
         if(first3 != null) { /* if exists it's because there was a orientation change. We need to reformat as we need the data passed */
             // onUrl and onName to ArrayList
             onUrl = new ArrayList<String>(Arrays.asList((String[]) first3.get(3))); // hierarchical urls
@@ -286,15 +294,13 @@ public class DisplayMessageActivity extends Activity {
             lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
 
         } else {
-        	
             // cookies
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
             scookie = prefs.getString("cookies", ""); //�Existe cookie?
     	    if(scookie!="") {
     	    	cookies = toMap(scookie); //Si existe cookie la pasamos a MAP
     	    }
         
-	        onUrl.add("/dotlrn/?page_num=2");
+	        onUrl.add("/dotlrn/?page_num="+panel);
 	        onName.add("Documentos");
 	        
 	        // Actualizamos nombre de LblSubTitulo
@@ -316,11 +322,29 @@ public class DisplayMessageActivity extends Activity {
 			
 			
 	        try {
-	        	elements = scrap(doc);
+	        	elements = scrap2(doc);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+	        elsize = elements.size();
+	        if(elsize==0) {
+	        	Log.d("Size", String.valueOf(elements.size()));
+	        	TextView tv = (TextView) findViewById(R.id.panel_error);
+	        	tv.setVisibility(0);
+	        	
+	        	/* We don't want change screen orientation */
+		        //---get the current display info---
+		        WindowManager wm = getWindowManager();
+		        Display d = wm.getDefaultDisplay();
+		        if (d.getWidth() > d.getHeight()) {
+		        	//---change to landscape mode---
+			        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+		        } else {
+		        	//---change to portrait mode---
+			        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+		        }
+	        } else {
 	        
 	        first.add(asigsToArray(elements, true, comunidades)); // Añadimos el Array con los  nombres de Carpetas, Asignaturas y Archivos al ArrayList - [0]
 	        String s[] = urlsToArray(elements, true, comunidades);
@@ -336,47 +360,49 @@ public class DisplayMessageActivity extends Activity {
 	        lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
 	        lstAdapter = new AdaptadorDocs(this, first2);
 	        lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
+	        }
 	    }
-	        
-        lstDocs.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> a, View v, int position, long id) { //Al clicar X item de la lista
-            	isInternetPresent = cd.isConnectingToInternet();
-            	if(isInternetPresent) {
-	            	if(!(first.get(2)[position].toString().equals("0")) && !(first.get(2)[position].toString().equals("1")) && !(first.get(2)[position].toString().equals("6"))) {
-	            		docPosition = position;
-	            		Log.d("TIPO", "DOCUMENTO");
-	            		// ProgressDialog (salta para mostrar el proceso del archivo descargándose)
-	            		dialog = new ProgressDialog(mycontext);
-	                    
-	            		// Servicio para la descarga del archivo
-	            		url = first.get(1)[docPosition].toString();
-	            		url_back = onUrl.get(onUrl.size() - 2);
-	            		new docDownload().execute();
-
-	            	} else {
-		            	if(onUrl.get(onUrl.size() - 1) == "/dotlrn/?page_num=2" && !comunidades){
-		                	isTheHome = true;
-		                } else {
-		                	isTheHome = false;
-		                }
-		            	//Cuando se hace click en una opción de la lista, queremos borrar todo mientras carga, incluído el título header
-		            	headerTitle.setText(null);
-		            	lstAdapter.clearData();
-		            	// Refrescamos View
-		            	lstAdapter.notifyDataSetChanged();
-		            	lstDocs.setDividerHeight(0);
-		            	docPosition = position;
-		            	Log.d("URL", onUrl.get(onUrl.size() - 1));
-		            	
-		            	url = first.get(1)[docPosition].toString();
-		            	new urlConnect().execute();
-	            	}
-	            } else {
-	            	Toast.makeText(getBaseContext(),getString(R.string.no_internet), Toast.LENGTH_LONG).show();
+        if(elsize>0) {
+	        lstDocs.setOnItemClickListener(new OnItemClickListener() {
+	            @Override
+	            public void onItemClick(AdapterView<?> a, View v, int position, long id) { //Al clicar X item de la lista
+	            	isInternetPresent = cd.isConnectingToInternet();
+	            	if(isInternetPresent) {
+		            	if(!(first.get(2)[position].toString().equals("0")) && !(first.get(2)[position].toString().equals("1")) && !(first.get(2)[position].toString().equals("6"))) {
+		            		docPosition = position;
+		            		Log.d("TIPO", "DOCUMENTO");
+		            		// ProgressDialog (salta para mostrar el proceso del archivo descargándose)
+		            		dialog = new ProgressDialog(mycontext);
+		                    
+		            		// Servicio para la descarga del archivo
+		            		url = first.get(1)[docPosition].toString();
+		            		url_back = onUrl.get(onUrl.size() - 2);
+		            		new docDownload().execute();
+	
+		            	} else {
+			            	if((onUrl.get(onUrl.size() - 1).equalsIgnoreCase(("/dotlrn/?page_num="+panel))) && !comunidades){
+			                	isTheHome = true;
+			                } else {
+			                	isTheHome = false;
+			                }
+			            	//Cuando se hace click en una opción de la lista, queremos borrar todo mientras carga, incluído el título header
+			            	headerTitle.setText(null);
+			            	lstAdapter.clearData();
+			            	// Refrescamos View
+			            	lstAdapter.notifyDataSetChanged();
+			            	lstDocs.setDividerHeight(0);
+			            	docPosition = position;
+			            	Log.d("URL", onUrl.get(onUrl.size() - 1));
+			            	
+			            	url = first.get(1)[docPosition].toString();
+			            	new urlConnect().execute();
+		            	}
+		            } else {
+		            	Toast.makeText(getBaseContext(),getString(R.string.no_internet), Toast.LENGTH_LONG).show();
+		            }
 	            }
-            }
-        });
+	        });
+        }
 	    
 	    if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
         IntentFilter intentFilter = new IntentFilter(DisplayMessageActivity.RESPONSE);
@@ -438,13 +464,13 @@ public class DisplayMessageActivity extends Activity {
 		    image = (ImageView)item.findViewById(R.id.folderImage);
 		    switch(Integer.parseInt(data.get(2)[position].toString())) {
 		    case 0: // Atr�s
-		    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)|Sgr\\..+?\\s", "" );
+		    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)", "" );
 		    	title.setText(rgxTitle.trim());
 		    	ico = getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_back", null, null); // Back ico
 		    	image.setImageResource(ico);
 		    	break;
 		    case 1: // Carpeta
-		    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)|Sgr\\..+?\\s", "" );
+		    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)", "" );
 		    	title.setText(rgxTitle.trim());
 		    	ico = getResources().getIdentifier("com.jp.miaulavirtual:drawable/icon_folder", null, null); // Folder ico
 		    	image.setImageResource(ico);
@@ -474,7 +500,7 @@ public class DisplayMessageActivity extends Activity {
 		    	image.setImageResource(ico);
 		    	break;
 		    case 6: // Comunidades y Otros
-		    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)|Sgr\\..+?\\s", "" );
+		    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)", "" );
 		    	title.setText(rgxTitle.trim());
 		    	ico = getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_comu", null, null); // Word ico
 		    	image.setImageResource(ico);
@@ -532,18 +558,25 @@ public class DisplayMessageActivity extends Activity {
         headerTitle.setText(onName.get(onName.size() - 1));
 		
 		doc = Jsoup.parse(mydoc);
-        try {
-			elements = scrap(doc);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        if(onUrl.get(onUrl.size() - 1) == "/dotlrn/?page_num=2" && !comunidades){
+        if((onUrl.get(onUrl.size() - 1).equalsIgnoreCase(("/dotlrn/?page_num="+panel))) && !comunidades){
         	isHome = true;
         } else {
         	isHome = false;
 
         }
+		try {
+        	if(isHome) {
+        		elements = scrap2(doc);
+        	} else {
+        		elements = scrap(doc);
+        	}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Log.d("Doc", onUrl.get(onUrl.size() - 1));
+		Log.d("Doc", "/dotlrn/?page_num="+panel);
+		Log.d("Doc", String.valueOf(isHome));
         first.remove(0);
         first.remove(0);
         first.remove(0);
@@ -585,6 +618,15 @@ public class DisplayMessageActivity extends Activity {
     {
         super.onRestart();
         isInternetPresent = cd.isConnectingToInternet();
+        String p2 = panel;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
+        // panel
+    	panel = prefs.getString("panel", "2");
+    	if(!p2.equalsIgnoreCase(panel)) {
+    		Intent i = new Intent(this, MainActivity.class);
+    		startActivity(i); 
+    		finish();
+    	}
         Log.d(tag, "In the onRestart() event");
         
         /**
@@ -675,6 +717,12 @@ public class DisplayMessageActivity extends Activity {
 	    Log.d("Service", "Passing elements variable");
 		return elem;
 	}
+    
+    public Elements scrap2(Document mdoc) throws IOException {
+		Elements elem = mdoc.select("table[summary=Datos para folders] tbody tr[class=odd], table[summary=Datos para folders] tbody tr[class=even], table[summary=Datos para folders] tbody tr[class=even last], table[summary=Datos para folders] tbody tr[class=odd last]"); //Filas de Documentos
+	    Log.d("Service", "Passing elements variable2");
+		return elem;
+	}
 	
 	public String [] asigsToArray(Elements melem, Boolean isHome, Boolean comun) {
 		int i = 1;
@@ -716,7 +764,7 @@ public class DisplayMessageActivity extends Activity {
 		if(isHome) {
 			elem = melem.select("td[headers=contents_name] a, td[headers=folders_name] a").not("[href*=/clubs/]"); //Nombre Asignaturas String !"Comunuidades"
 			s = new String[(elem.size())+1];
-			s[0] = "/dotlrn/?page_num=2";
+			s[0] = "/dotlrn/?page_num="+String.valueOf(panel);
 			for(Element el : elem){
 			    s[i] = el.select("a").attr("href");
 			    i++;

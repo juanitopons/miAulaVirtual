@@ -62,17 +62,18 @@ public class MainActivity extends Activity {
 	// Service
 	
 	// User data
-	String user;
-	String pass;
-	String url;
+	private String user;
+	private String pass;
+	private String url;
+	private String panel;
 	
-	String tag = "Lifecycle";
+	private String tag = "Lifecycle";
 	
 	//Respuesta
-	Response res;
-	Context mycontext;
+	private Response res;
+	private Context mycontext;
 	
-	Map<String, String> cookies;
+	private Map<String, String> cookies;
 	
 	// Receiver
 	public final static String RESPONSE = "com.jp.miaulavirtual.RESPONSE";
@@ -126,11 +127,14 @@ public class MainActivity extends Activity {
         Editor editor = prefs.edit();
     	editor.remove("cookies");
     	editor.commit();
+    	
+        // panel
+    	panel = prefs.getString("panel", "2");
         
     	// Getting user data
         user = prefs.getString("myuser", "Ninguno");
         pass = prefs.getString("mypass", "Ninguno");
-        url = "/dotlrn/?page_num=2";
+        url = "/dotlrn/?page_num="+panel;
        
         if(!user.equals("Ninguno")){ //Si el usuario entra a la aplicación y ya está logueado
         	
@@ -268,10 +272,13 @@ public class MainActivity extends Activity {
 	        //El usuario ha logueado, ponemos la pantalla de carga
 	        setContentView(R.layout.activity_main2);
 	        
+	        // panel
+	    	panel = prefs.getString("panel", "2");
+	        
 	        //Actualizamos el usuario y contrase�a
 	        user = tuser.getText().toString();
 	        pass = tpass.getText().toString();
-	        url = "/dotlrn/?page_num=2";
+	        url = "/dotlrn/?page_num="+panel;
 	        
 	        Log.d("DATOS2", user);
 	        Log.d("DATOS2", pass);

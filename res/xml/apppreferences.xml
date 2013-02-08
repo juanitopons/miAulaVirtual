@@ -14,13 +14,21 @@
             android:title="Pass"
             android:key="mypass"
             android:inputType="textPassword"
-            />                  
+            />    
+        <EditTextPreference
+            android:summary="Nº de la carpeta en la que está la sección Documentos. Ej: 0 = 'Mi Portal'. Por defecto: 2 = 'Mis Documentos'"
+            android:defaultValue="2"
+            android:title="Panel de Documentos"
+            android:key="panel"
+            android:maxLength="1"
+            android:inputType="number"
+            />                
     </PreferenceCategory>
         <PreferenceCategory android:title="Funcionalidades">
         <CheckBoxPreference
-            android:title="¿Recortar patrones en los nombres de las asignaturas?"
+            android:title="¿Recortar patrones?"
             android:defaultValue="true"
-            android:summary="True or False"
+            android:summary="Recortar patrones en nombres de carpetas. Año, código, etc."
             android:key="pattern" />
         </PreferenceCategory>      
 </PreferenceScreen>
