@@ -102,7 +102,6 @@ public class DisplayMessageActivity extends Activity {
 	
 	//Respuesta
 	private Response res;
-	private int elsize; // elements size
     
 	private int a = 0; //Control n� de tareas 1 = GET || POST 2 = GET cookie vencida, POST, GET.
 	private String scookie;
@@ -259,110 +258,92 @@ public class DisplayMessageActivity extends Activity {
         
         // Get the onRetainNonConfigurationInstance()
         final ArrayList<Object[]> first3 = (ArrayList<Object[]>) getLastNonConfigurationInstance();
-
-        if(first3 != null) { /* if exists it's because there was a orientation change. We need to reformat as we need the data passed */
-            // onUrl and onName to ArrayList
-            onUrl = new ArrayList<String>(Arrays.asList((String[]) first3.get(3))); // hierarchical urls
-            onName = new ArrayList<String>(Arrays.asList((String[]) first3.get(4))); // hierarchical names
-            first3.remove(3);
-            first3.remove(3);
-            
-            // cookies to Map
-            cookies = new HashMap<String, String>();
-            for (int i = 0; i < first3.get(3).length; i++) {
-		          cookies.put(first3.get(3)[i].toString(), first3.get(4)[i].toString());
-		    }
-            scookie = cookies.toString(); // ¡IMPORTANT!
-            first3.remove(3);
-            first3.remove(3);
-            
-        	// first 3 = first 1
-            for (Object[] objects: first3) first.add((Object[])objects.clone());
-            // first 3 = first 2
-            for (Object[] objects: first3) first2.add((Object[])objects.clone());
-            first3.clear();
-            
-            // Update de subtitle
-            headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
-            headerTitle.setTextColor(getResources().getColor(R.color.list_title));
-            headerTitle.setTypeface(null, 1);
-            headerTitle.setText(onName.get(onName.size() - 1));
-            
-            // retrieve the same View before change orientation
-            lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
-            lstAdapter = new AdaptadorDocs(this, first2);
-            lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
-
-        } else {
-            // cookies
-            scookie = prefs.getString("cookies", ""); //�Existe cookie?
-    	    if(scookie!="") {
-    	    	cookies = toMap(scookie); //Si existe cookie la pasamos a MAP
-    	    }
         
-	        onUrl.add("/dotlrn/?page_num="+panel);
-	        onName.add("Documentos");
-	        
-	        // Actualizamos nombre de LblSubTitulo
-	        headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
-	        headerTitle.setTextColor(getResources().getColor(R.color.list_title));
-	        headerTitle.setTypeface(null, 1);
-	        headerTitle.setText(onName.get(onName.size() - 1));
-	        
-	        //Recibimos primera llamada al crear la Actividad
-	        Intent intent = getIntent();
-	        
-		    // Datos de usuario
-		    user = intent.getStringExtra("user");
-		    pass = intent.getStringExtra("pass");
-		    
-		    // Recibimos datos HOME
-	        fServ = intent.getStringExtra("out");
-			doc = Jsoup.parse(fServ);
-			
-			
-	        try {
-	        	elements = scrap2(doc);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	        elsize = elements.size();
-	        if(elsize==0) {
-	        	Log.d("Size", String.valueOf(elements.size()));
-	        	TextView tv = (TextView) findViewById(R.id.panel_error);
-	        	tv.setVisibility(0);
-	        	
-	        	/* We don't want change screen orientation */
-		        //---get the current display info---
-		        WindowManager wm = getWindowManager();
-		        Display d = wm.getDefaultDisplay();
-		        if (d.getWidth() > d.getHeight()) {
-		        	//---change to landscape mode---
-			        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-		        } else {
-		        	//---change to portrait mode---
-			        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
-		        }
-	        } else {
-	        
-	        first.add(asigsToArray(elements, true, comunidades)); // Añadimos el Array con los  nombres de Carpetas, Asignaturas y Archivos al ArrayList - [0]
-	        String s[] = urlsToArray(elements, true, comunidades);
-	        first.add(s); // Añadimos el Array con las  URLS al ArrayList - [1]
-	        int mysize = s.length;
-	        first.add(typeToArray(elements, true, comunidades, mysize)); // Añadimos el Array con los TYPES al ArrayList - [2]
-	        
-	        //Copia de FIRST que puede ser borrada
-	        for (Object[] objects: first) {
-	        first2.add((Object[])objects.clone());
-	        }
+        try{
+	        if(first3 != null) { /* if exists it's because there was a orientation change. We need to reformat as we need the data passed */
+	            // onUrl and onName to ArrayList
+	            onUrl = new ArrayList<String>(Arrays.asList((String[]) first3.get(3))); // hierarchical urls
+	            onName = new ArrayList<String>(Arrays.asList((String[]) first3.get(4))); // hierarchical names
+	            first3.remove(3);
+	            first3.remove(3);
+	            
+	            // cookies to Map
+	            cookies = new HashMap<String, String>();
+	            for (int i = 0; i < first3.get(3).length; i++) {
+			          cookies.put(first3.get(3)[i].toString(), first3.get(4)[i].toString());
+			    }
+	            scookie = cookies.toString(); // ¡IMPORTANT!
+	            first3.remove(3);
+	            first3.remove(3);
+	            
+	        	// first 3 = first 1
+	            for (Object[] objects: first3) first.add((Object[])objects.clone());
+	            // first 3 = first 2
+	            for (Object[] objects: first3) first2.add((Object[])objects.clone());
+	            first3.clear();
+	            
+	            // Update de subtitle
+	            headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
+	            headerTitle.setTextColor(getResources().getColor(R.color.list_title));
+	            headerTitle.setTypeface(null, 1);
+	            headerTitle.setText(onName.get(onName.size() - 1));
+	            
+	            // retrieve the same View before change orientation
+	            lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
+	            lstAdapter = new AdaptadorDocs(this, first2);
+	            lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
 	
-	        lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
-	        lstAdapter = new AdaptadorDocs(this, first2);
-	        lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
-	        }
-	    }
-        if(elsize>0) {
+	        } else {
+	            // cookies
+	            scookie = prefs.getString("cookies", ""); //�Existe cookie?
+	    	    if(scookie!="") {
+	    	    	cookies = toMap(scookie); //Si existe cookie la pasamos a MAP
+	    	    }
+	        
+		        onUrl.add("/dotlrn/?page_num="+panel);
+		        onName.add("Documentos");
+		        
+		        // Actualizamos nombre de LblSubTitulo
+		        headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
+		        headerTitle.setTextColor(getResources().getColor(R.color.list_title));
+		        headerTitle.setTypeface(null, 1);
+		        headerTitle.setText(onName.get(onName.size() - 1));
+		        
+		        //Recibimos primera llamada al crear la Actividad
+		        Intent intent = getIntent();
+		        
+			    // Datos de usuario
+			    user = intent.getStringExtra("user");
+			    pass = intent.getStringExtra("pass");
+			    
+			    // Recibimos datos HOME
+		        fServ = intent.getStringExtra("out");
+				doc = Jsoup.parse(fServ);
+				
+				
+		        try {
+		        	elements = scrap2(doc);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		        
+		        first.add(asigsToArray(elements, true, comunidades)); // Añadimos el Array con los  nombres de Carpetas, Asignaturas y Archivos al ArrayList - [0]
+		        String s[] = urlsToArray(elements, true, comunidades);
+		        first.add(s); // Añadimos el Array con las  URLS al ArrayList - [1]
+		        int mysize = s.length;
+		        first.add(typeToArray(elements, true, comunidades, mysize)); // Añadimos el Array con los TYPES al ArrayList - [2]
+		        
+		        //Copia de FIRST que puede ser borrada
+		        for (Object[] objects: first) {
+		        first2.add((Object[])objects.clone());
+		        }
+		
+		        lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
+		        lstAdapter = new AdaptadorDocs(this, first2);
+		        lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
+		        
+		    }
 	        lstDocs.setOnItemClickListener(new OnItemClickListener() {
 	            @Override
 	            public void onItemClick(AdapterView<?> a, View v, int position, long id) { //Al clicar X item de la lista
@@ -401,8 +382,23 @@ public class DisplayMessageActivity extends Activity {
 		            	Toast.makeText(getBaseContext(),getString(R.string.no_internet), Toast.LENGTH_LONG).show();
 		            }
 	            }
-	        });
-        }
+	        }); 
+        } catch(ArrayIndexOutOfBoundsException e) {
+	        TextView tv = (TextView) findViewById(R.id.panel_error);
+	        tv.setVisibility(0);
+	        setRestrictedOrientation();
+	        Toast.makeText(getBaseContext(),getString(R.string.panel_error2), Toast.LENGTH_LONG).show();
+        } catch(IndexOutOfBoundsException e) {
+	        TextView tv = (TextView) findViewById(R.id.panel_error);
+	        tv.setVisibility(0);
+	        setRestrictedOrientation();
+	        Toast.makeText(getBaseContext(),getString(R.string.panel_error2), Toast.LENGTH_LONG).show();
+		} catch(IllegalArgumentException e) {
+	        TextView tv = (TextView) findViewById(R.id.panel_error);
+	        tv.setVisibility(0);
+	        setRestrictedOrientation();
+	        Toast.makeText(getBaseContext(),getString(R.string.panel_error2), Toast.LENGTH_LONG).show();
+		}
 	    
 	    if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
         IntentFilter intentFilter = new IntentFilter(DisplayMessageActivity.RESPONSE);
@@ -528,17 +524,7 @@ public class DisplayMessageActivity extends Activity {
 	        //botoncito desplegable pendiente AQUI
 	    	} else {
 	    			
-		        /* We don't want change screen orientation while loading petition */
-		        //---get the current display info---
-		        WindowManager wm = getWindowManager();
-		        Display d = wm.getDefaultDisplay();
-		        if (d.getWidth() > d.getHeight()) {
-		        	//---change to landscape mode---
-			        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-		        } else {
-		        	//---change to portrait mode---
-			        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
-		        }
+	    		setRestrictedOrientation();
 	    		
 	    		LayoutInflater inflater = context.getLayoutInflater();
 	    	    item = inflater.inflate(R.layout.load_list, null);
@@ -724,7 +710,7 @@ public class DisplayMessageActivity extends Activity {
 		return elem;
 	}
 	
-	public String [] asigsToArray(Elements melem, Boolean isHome, Boolean comun) {
+	public String [] asigsToArray(Elements melem, Boolean isHome, Boolean comun) throws IndexOutOfBoundsException {
 		int i = 1;
 		String s[];
 		Elements elem;
@@ -732,6 +718,7 @@ public class DisplayMessageActivity extends Activity {
 			elem = melem.select("td[headers=contents_name] a, td[headers=folders_name] a").not("[href*=/clubs/]"); //Nombre Asignaturas String !"Comunuidades"
 			s = new String[(elem.size())+1]; //todo-comunidades + 1(carpeta comunidades)
 			s[0] = "Comunidades y otros";
+			if(elem.size()==0) { String exc = elem.get(1).toString(); }
 			for(Element el : elem){
 			    s[i] = el.text();
 			    i++;
@@ -883,17 +870,7 @@ public class DisplayMessageActivity extends Activity {
             		}
             		});
 	        dialog.show();
-	        /* We don't want change screen orientation while loading petition */
-	        //---get the current display info---
-	        WindowManager wm = getWindowManager();
-	        Display d = wm.getDefaultDisplay();
-	        if (d.getWidth() > d.getHeight()) {
-	        	//---change to landscape mode---
-		        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-	        } else {
-	        	//---change to portrait mode---
-		        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
-	        }
+	        setRestrictedOrientation();
         }
     }
     
@@ -1244,5 +1221,19 @@ public class DisplayMessageActivity extends Activity {
 	    int exp = (int) (Math.log(bytes) / Math.log(unit));
 	    String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
 	    return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+	}
+	
+	public void setRestrictedOrientation() {
+		/* We don't want change screen orientation */
+	    //---get the current display info---
+	    WindowManager wm = getWindowManager();
+	    Display d = wm.getDefaultDisplay();
+	    if (d.getWidth() > d.getHeight()) {
+	    	//---change to landscape mode---
+	        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+	    } else {
+	    	//---change to portrait mode---
+	        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+	    }
 	}
 }

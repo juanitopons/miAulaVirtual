@@ -297,7 +297,8 @@ public class MainActivity extends Activity {
     /* TASKS OR SERVICES */
     
     private class urlConnect extends AsyncTask<Void, Integer, Response> {
-
+    	
+    	int a;
     	protected Response doInBackground(Void... params) {
         	//Mirar si hay datos en cache, si los hay, cogerlos y hacer el get()
         		try {
@@ -308,6 +309,7 @@ public class MainActivity extends Activity {
             	}catch(IOException e)
             	{
             		res = null;
+            		a = 1;
             	}
             return res;
         }
@@ -336,12 +338,18 @@ public class MainActivity extends Activity {
 	        	} else {
 	        		startOk3(mycontext, 6, false);
 	        	}
+	        } else if(a==1) {
+	        	Intent bcIntent = new Intent();
+                bcIntent.setAction(LOGGED);
+                bcIntent.putExtra("logged", true);
+                sendBroadcast(bcIntent);
+            	startOk2(mycontext, 9, false);
 	        } else {
-	        		Intent bcIntent = new Intent();
-		            bcIntent.setAction(LOGGED);
-		            bcIntent.putExtra("logged", false);
-		            bcIntent.putExtra("id", 1);
-		            sendBroadcast(bcIntent);
+        		Intent bcIntent = new Intent();
+	            bcIntent.setAction(LOGGED);
+	            bcIntent.putExtra("logged", false);
+	            bcIntent.putExtra("id", 1);
+	            sendBroadcast(bcIntent);
 	        }
         }
     }
@@ -359,6 +367,14 @@ public class MainActivity extends Activity {
     	  i.putExtra("pass", pass);
     	  i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     	  startActivity(i);
+    	}
+    
+    private void startOk2(Context context, int id, Boolean status) {
+    	Intent i = new Intent(this, DisplayMessageActivity.class);
+    	i.putExtra("user", user);
+  	  	i.putExtra("pass", pass);
+  	  	i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+  	  	startActivity(i);
     	}
     
     private void startOk3(Context context, int id, Boolean status) {
