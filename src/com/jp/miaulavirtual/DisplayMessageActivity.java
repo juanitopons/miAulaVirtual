@@ -85,8 +85,6 @@ public class DisplayMessageActivity extends Activity {
 	//Variables POST
     private String url;
 	public final static String RESPONSE = "com.jp.miaulavirtual.RESPONSE";
-	
-	private String url_back;
 	private Boolean task_status = true;
 	
 	//Respuesta
@@ -99,31 +97,27 @@ public class DisplayMessageActivity extends Activity {
 	// Activity
 	private Context mycontext;
 	
-	private String tag = "Lifecycle2";
-	
 	// User data
 	private String user;
 	private String pass;
 	private String panel; // control de panel number of Documents section
 	
 	// Valores del HOME de documentos
-	private Document doc;
-	private Elements elements;
-	private String fServ; //Respuesta primera (home)
-	private ArrayList<String[]> data = new ArrayList<String[]>(); // Primera respuesta (home)
-	private ArrayList<String[]> dataCopy = new ArrayList<String[]>();
+	private String fServ; // the response we caught from the MainActivity
+	private ArrayList<String[]> data = new ArrayList<String[]>(); // connection data (Names, Urls, Types)
+	private ArrayList<String[]> dataCopy = new ArrayList<String[]>(); // connection data copy that we can .clear
+	private ArrayList<String[]> onData = new ArrayList<String[]>(); // we need to know where the user is and where he has been to provide navigation back
 	
 	//Nombres URL's y Types por las que se pasa y Boolean necesarios
-	private ArrayList<String[]> onData = new ArrayList<String[]>();
-	private Boolean isTheHome;
+	private Boolean isTheHome; 
 	private Boolean comunidades = false; // URL principal documentos y comunidades = true -> Carpeta Comunidades url /clubs/; Sino carpeta Principal, url-> /classes/ y otras
-	private int docPosition = 0; // Necesitamos saber la posición del archivo clickeado para poder mandar la URL desde fuera del Listener
-	private ProgressDialog dialog;
-	private TextView headerTitle;
+	private int clickedPosition = 0; // Necesitamos saber la posición del archivo clickeado para poder mandar la URL desde fuera del Listener
 	
 	// Interface
 	private ListView lstDocs;
 	private ListAdapter lstAdapter;
+	private ProgressDialog dialog;
+	private TextView headerTitle;
 	
 	private DataUpdateReceiver dataUpdateReceiver;
 	
@@ -177,20 +171,20 @@ public class DisplayMessageActivity extends Activity {
         			Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT).show();
         		} else {
         			if(isTheHome) {
-	            		if(docPosition == 0) comunidades = true; //Click Comunidades y otros
+	            		if(clickedPosition == 0) comunidades = true; //Click Comunidades y otros
 	            		String[] theData = new String[2];
-	            		theData[0] = data.get(1)[docPosition].toString(); // url
-	            		theData[1] = data.get(0)[docPosition].toString(); // name
+	            		theData[0] = data.get(1)[clickedPosition].toString(); // url
+	            		theData[1] = data.get(0)[clickedPosition].toString(); // name
 	            		onData.add(theData);
 	            	} else { 
-	            		if(docPosition==0){ //Click atrás
+	            		if(clickedPosition==0){ //Click atrás
 	            			onData.remove(onData.size() - 1); // remove data
 	            			comunidades = false;
 	            			if(onData.size()>=2 && (onData.get(0)[0].toString().equals(onData.get(1)[0].toString()))) comunidades = true;
 	            		} else {
 	            			String[] theData = new String[2];
-	            			theData[0] = data.get(1)[docPosition].toString(); // url
-		            		theData[1] = data.get(0)[docPosition].toString(); // name
+	            			theData[0] = data.get(1)[clickedPosition].toString(); // url
+		            		theData[1] = data.get(0)[clickedPosition].toString(); // name
 		            		onData.add(theData);
 	            		}
 	            	}
@@ -239,7 +233,6 @@ public class DisplayMessageActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_display_message);
 		// Make sure we're running on Honeycomb or higher to use ActionBar APIs
-        Log.d(tag, "In the onCreate() event");
         
         // creating connection detector class instance
         cd = new ConnectionDetector(getApplicationContext());
@@ -314,9 +307,8 @@ public class DisplayMessageActivity extends Activity {
 			    
 			    // Recibimos datos HOME
 		        fServ = intent.getStringExtra("out");
-				doc = Jsoup.parse(fServ);
-				
-				
+				Document doc = Jsoup.parse(fServ);
+				Elements elements = null;
 		        try {
 		        	elements = scrap2(doc);
 				} catch (IOException e) {
@@ -343,15 +335,15 @@ public class DisplayMessageActivity extends Activity {
 	            	isInternetPresent = cd.isConnectingToInternet();
 	            	if(isInternetPresent) {
 		            	if(!(data.get(2)[position].toString().equals("0")) && !(data.get(2)[position].toString().equals("1")) && !(data.get(2)[position].toString().equals("6"))) {
-		            		docPosition = position;
+		            		clickedPosition = position;
 		            		Log.d("TIPO", "DOCUMENTO");
 		            		// ProgressDialog (salta para mostrar el proceso del archivo descargándose)
 		            		dialog = new ProgressDialog(mycontext);
 		                    
 		            		// Servicio para la descarga del archivo
-		            		url = data.get(1)[docPosition].toString();
-		            		url_back = onData.get(onData.size() - 2)[0];
-		            		new docDownload().execute();
+		            		url = data.get(1)[clickedPosition].toString();
+		            		String url_back = onData.get(onData.size() - 2)[0];
+		            		new docDownload(url_back).execute();
 	
 		            	} else {
 			            	if((onData.get(onData.size() - 1)[0].equalsIgnoreCase(("/dotlrn/?page_num="+panel))) && !comunidades){
@@ -365,10 +357,10 @@ public class DisplayMessageActivity extends Activity {
 			            	// Refrescamos View
 			            	lstAdapter.notifyDataSetChanged();
 			            	lstDocs.setDividerHeight(0);
-			            	docPosition = position;
+			            	clickedPosition = position;
 			            	Log.d("URL", onData.get(onData.size() - 1)[0]);
 			            	
-			            	url = data.get(1)[docPosition].toString();
+			            	url = data.get(1)[clickedPosition].toString();
 			            	new urlConnect().execute();
 		            	}
 		            } else {
@@ -409,7 +401,8 @@ public class DisplayMessageActivity extends Activity {
         headerTitle.setTypeface(null, 1);
         headerTitle.setText(onData.get(onData.size() - 1)[1]);
 		
-		doc = Jsoup.parse(mydoc);
+		Document doc = Jsoup.parse(mydoc);
+		Elements elements = null;
         if((onData.get(onData.size() - 1)[0].equalsIgnoreCase(("/dotlrn/?page_num="+panel))) && !comunidades){
         	isHome = true;
         } else {
@@ -458,13 +451,13 @@ public class DisplayMessageActivity extends Activity {
     public void onStart()
     {
         super.onStart();
-        Log.d(tag, "In the onStart() event");
         
     }
     
     public void onRestart()
     {
         super.onRestart();
+        // we must recheck the internet connection
         isInternetPresent = cd.isConnectingToInternet();
         String p2 = panel;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
@@ -475,37 +468,27 @@ public class DisplayMessageActivity extends Activity {
     		startActivity(i); 
     		finish();
     	}
-        Log.d(tag, "In the onRestart() event");
-        
-        /**
-         * Comprobar si tiene conexi�n a Internet.
-         * Tiene conexi�n: Actualizar
-         * No tiene conexi�n: Mensaje "No existe conexi�n a internet"
-         */
     }
     
     public void onResume()
     {
         super.onResume();
-        Log.d(tag, "In the onResume() event");
+
     }
     
     public void onPause()
     {
         super.onPause();
-        Log.d(tag, "In the onPause() event");
     }
     
     public void onStop()
     {
         super.onStop();
-        Log.d(tag, "In the onStop() event");
     }
     
     public void onDestroy()
     {
         super.onDestroy();
-        Log.d(tag, "In the onDestroy() event");
         if(dataUpdateReceiver!=null) unregisterReceiver(dataUpdateReceiver);
         
         //ELIMINAR COOKIE DEL CACHE para que siempre que se inicie la aplicacion haga POST
@@ -525,7 +508,6 @@ public class DisplayMessageActivity extends Activity {
         */
         switch(item.getItemId()){
         case R.id.preferencias: //Nombre del id del men�, para combrobar que se ha pulsado
-        	Log.d(tag, "Preferencias");
         	startActivity(new Intent(this, SettingsActivity.class));;
         	break;
         case R.id.mysesion:
@@ -580,7 +562,6 @@ public class DisplayMessageActivity extends Activity {
 			elem = melem.select("td[headers=contents_name] a, td[headers=folders_name] a").not("[href*=/clubs/]"); //Nombre Asignaturas String !"Comunuidades"
 			s = new String[(elem.size())+1]; //todo-comunidades + 1(carpeta comunidades)
 			s[0] = "Comunidades y otros";
-			if(elem.size()==0) { String exc = elem.get(1).toString(); }
 			for(Element el : elem){
 			    s[i] = el.text();
 			    i++;
@@ -669,24 +650,25 @@ public class DisplayMessageActivity extends Activity {
 				if(mtypes[3].equals(types.toString())) s[i] = "3"; // 3 = Excel
 				if(mtypes[4].equals(types.toString())) s[i] = "4"; // 4 = Power Point
 				if(mtypes[5].equals(types.toString())) s[i] = "5"; // 5 = Word
-				Log.d("Types", s[i]);
 				i++;
 			}
 		}
-		Log.d("typeToArray", String.valueOf(size));
 		return s;
 	}
 	
-	/* TASKS OR SERVICES */
+	/* TASKS */
 	
 	private class docDownload extends AsyncTask<Void, Integer, Void> {
-		protected docDownload() {}
+		String url_back;
+		protected docDownload(String url_back) {
+			this.url_back = url_back;
+		}
 		
     	protected Void doInBackground(Void... params) {
         	if(cookies != null) {
         		Log.d("Document", "getDoc AHORA");
         		try {
-        			getDoc(mycontext);
+        			getDoc(mycontext, url_back);
             	}catch(SocketTimeoutException e)
             	{
             		startOk3(mycontext, 6, false);
@@ -860,7 +842,7 @@ public class DisplayMessageActivity extends Activity {
 	 * @return String - Tama�o del archivo en formato del SI
 	 * @throws IOException
 	 */
-    public void getDoc(Context mycontext) throws IOException, SocketTimeoutException {
+    public void getDoc(Context mycontext, String url_back) throws IOException, SocketTimeoutException {
     	URI uri;
     	Log.d("Document", url);
     	String request = null;
@@ -877,7 +859,6 @@ public class DisplayMessageActivity extends Activity {
 			e.printStackTrace();
 		}
     	Log.d("Document", request);
-    	Log.d("Document", url_back);
     	
     	// Recheck cookie isn't expire
     	Response resp = Jsoup.connect("https://aulavirtual.uv.es"+ url_back).cookies(cookies).method(Method.GET).timeout(10*1000).execute();
@@ -889,7 +870,7 @@ public class DisplayMessageActivity extends Activity {
         	Log.d("Cookie", String.valueOf(a));
         	if(a==2) {
         		a = 1;
-        		new docDownload().execute(); //REejecutamos la tarea docDownload
+        		new docDownload(url_back).execute(); //REejecutamos la tarea docDownload
         	}
     	} else if(res.hasCookie("fs_block_id")) {
     		downloadFile(request);  
@@ -902,7 +883,7 @@ public class DisplayMessageActivity extends Activity {
             cookies = null; // eliminamos la cookie
             a = a+1; // Aumentamos el contador
             Log.d("Cookie", "COOKIE VENCIDA");
-            new docDownload().execute(); //REejecutamos la tarea (POST)
+            new docDownload(url_back).execute(); //REejecutamos la tarea (POST)
         } else if(res.hasCookie("tupi_style") || res.hasCookie("zen_style")) { // Cookie correcta, sesi�n POST ya habilitada. GET correcto. Procede.
         	downloadFile(request);
         }
@@ -1092,6 +1073,7 @@ public class DisplayMessageActivity extends Activity {
 	    return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void setRestrictedOrientation() {
 		/* We don't want change screen orientation */
 	    //---get the current display info---

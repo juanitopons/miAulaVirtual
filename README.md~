@@ -32,9 +32,9 @@ Android version compatibility: 2.0 and onward
 + Preference option for filtering empty folders
 + Preference option for language (Spanish, Catalan, English)
 + Folder direct access widget
++ Change Android back button functionality: For going hierarchically back in navigation and not to exit the application
 + <b><i>ListView</i> Search<b/>
 + Restrict orientation change on loading <b><i>DONE</i></b>
-+ Change Android back button functionality: For going hierarchically back in navigation and not to exit the application
 + Save instance of the activity on screen orientation change <b><i>DONE</i></b>
 + Add internet 3G, WIFI (not) access exception - <b><i>DONE</i></b>
 + Add virtual classroom 'down' (offline or unreachable) exception (Response.statusMessage()) <b><i>DONE</i></b>
@@ -51,6 +51,9 @@ None yet
 + <b>SOLVED: <i>Added support for ZEN style cookie</i></b> - Error getting resoucerse identifier
 
 ## Upcoming features ##
++ Organize archive in subjects' folders
++ Switch between years
++ Archive management
 + Task management (Sync Students tasks with Google Tasks)
 + Cool calendar (?)
 + Webmail integration (?)

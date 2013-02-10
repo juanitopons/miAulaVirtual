@@ -51,6 +51,9 @@ None yet
 + <b>SOLVED: <i>Added support for ZEN style cookie</i></b> - Error getting resoucerse identifier
 
 ## Upcoming features ##
++ Organize archive in subjects' folders
++ Switch between years
++ Archive management
 + Task management (Sync Students tasks with Google Tasks)
 + Cool calendar (?)
 + Webmail integration (?)
