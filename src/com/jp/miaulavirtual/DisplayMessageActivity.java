@@ -37,18 +37,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-
 import org.jsoup.Jsoup;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
-
-
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -60,7 +54,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -69,18 +62,14 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.Display;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -103,7 +92,7 @@ public class DisplayMessageActivity extends Activity {
 	//Respuesta
 	private Response res;
     
-	private int a = 0; //Control n� de tareas 1 = GET || POST 2 = GET cookie vencida, POST, GET.
+	private int a = 0; //Control nº de tareas 1 = GET || POST 2 = GET cookie vencida, POST, GET.
 	private String scookie;
 	private Map<String, String> cookies; //Obtener la cookie del cache
 	
@@ -125,8 +114,7 @@ public class DisplayMessageActivity extends Activity {
 	private ArrayList<Object[]> first2 = new ArrayList<Object[]>();
 	
 	//Nombres URL's y Types por las que se pasa y Boolean necesarios
-	private ArrayList<String> onUrl = new ArrayList<String>();
-	private ArrayList<String> onName = new ArrayList<String>();
+	private ArrayList<String[]> onData = new ArrayList<String[]>();
 	private Boolean isTheHome;
 	private Boolean comunidades = false; // URL principal documentos y comunidades = true -> Carpeta Comunidades url /clubs/; Sino carpeta Principal, url-> /classes/ y otras
 	private int docPosition = 0; // Necesitamos saber la posición del archivo clickeado para poder mandar la URL desde fuera del Listener
@@ -135,7 +123,7 @@ public class DisplayMessageActivity extends Activity {
 	
 	// Interface
 	private ListView lstDocs;
-	private AdaptadorDocs lstAdapter;
+	private ListAdapter lstAdapter;
 	
 	private DataUpdateReceiver dataUpdateReceiver;
 	
@@ -190,17 +178,20 @@ public class DisplayMessageActivity extends Activity {
         		} else {
         			if(isTheHome) {
 	            		if(docPosition == 0) comunidades = true; //Click Comunidades y otros
-	            		onUrl.add(first.get(1)[docPosition].toString());
-	            		onName.add(first.get(0)[docPosition].toString());
+	            		String[] theData = new String[2];
+	            		theData[0] = first.get(1)[docPosition].toString(); // url
+	            		theData[1] = first.get(0)[docPosition].toString(); // name
+	            		onData.add(theData);
 	            	} else { 
 	            		if(docPosition==0){ //Click atrás
-	            			onUrl.remove(onUrl.size() - 1); //Quitamos la URL actual
-	            			onName.remove(onName.size() - 1); //Quitamos el Nombre actual
+	            			onData.remove(onData.size() - 1); // remove data
 	            			comunidades = false;
-	            			if(onUrl.size()>=2 && (onUrl.get(0).toString().equals(onUrl.get(1).toString()))) comunidades = true;
+	            			if(onData.size()>=2 && (onData.get(0)[0].toString().equals(onData.get(1)[0].toString()))) comunidades = true;
 	            		} else {
-	            			onUrl.add(first.get(1)[docPosition].toString());
-	                    	onName.add(first.get(0)[docPosition].toString());
+	            			String[] theData = new String[2];
+	            			theData[0] = first.get(1)[docPosition].toString(); // url
+		            		theData[1] = first.get(0)[docPosition].toString(); // name
+		            		onData.add(theData);
 	            		}
 	            	}
 	        		afterBroadcaster(fServ);
@@ -218,13 +209,10 @@ public class DisplayMessageActivity extends Activity {
 	@Override
 	public Object onRetainNonConfigurationInstance() {
 		//---save whatever you want here; it takes in an Object type---
-		// we pass the Arraylist to String[] so we can put it, after, inside de 'first' and then can pass the ALL the data needed with one Object
-		String [] urls = new String[onUrl.size()-1];
-		String [] names = new String[onName.size()-1];
-		urls = onUrl.toArray(urls);
-		names = onName.toArray(names);
-		first2.add(urls);
-		first2.add(names);
+		// we pass the Arraylist to String[] so we can put it, after, inside the 'first' and then can pass the ALL the data needed with one Object
+		String [][] mydata = new String[onData.size()][2];
+		mydata = onData.toArray(mydata);
+		first2.add(mydata);
 		
 		// Save the cookie
 		String[] cookie_values = cookies.values().toArray(new String[0]);
@@ -262,9 +250,7 @@ public class DisplayMessageActivity extends Activity {
         try{
 	        if(first3 != null) { /* if exists it's because there was a orientation change. We need to reformat as we need the data passed */
 	            // onUrl and onName to ArrayList
-	            onUrl = new ArrayList<String>(Arrays.asList((String[]) first3.get(3))); // hierarchical urls
-	            onName = new ArrayList<String>(Arrays.asList((String[]) first3.get(4))); // hierarchical names
-	            first3.remove(3);
+	            onData = new ArrayList<String[]>(Arrays.asList((String[][]) first3.get(3))); // hierarchical urls
 	            first3.remove(3);
 	            
 	            // cookies to Map
@@ -286,11 +272,11 @@ public class DisplayMessageActivity extends Activity {
 	            headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
 	            headerTitle.setTextColor(getResources().getColor(R.color.list_title));
 	            headerTitle.setTypeface(null, 1);
-	            headerTitle.setText(onName.get(onName.size() - 1));
+	            headerTitle.setText(onData.get(onData.size()-1)[1]);
 	            
 	            // retrieve the same View before change orientation
 	            lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
-	            lstAdapter = new AdaptadorDocs(this, first2);
+	            lstAdapter = new ListAdapter(this, first2);
 	            lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
 	
 	        } else {
@@ -300,14 +286,16 @@ public class DisplayMessageActivity extends Activity {
 	    	    	cookies = toMap(scookie); //Si existe cookie la pasamos a MAP
 	    	    }
 	        
-		        onUrl.add("/dotlrn/?page_num="+panel);
-		        onName.add("Documentos");
+	    	    String [] theData = new String[2];
+	    	    theData[0] = "/dotlrn/?page_num="+panel;
+	    	    theData[1] = "Documentos";
+		        onData.add(theData);
 		        
 		        // Actualizamos nombre de LblSubTitulo
 		        headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
 		        headerTitle.setTextColor(getResources().getColor(R.color.list_title));
 		        headerTitle.setTypeface(null, 1);
-		        headerTitle.setText(onName.get(onName.size() - 1));
+		        headerTitle.setText(theData[1]);
 		        
 		        //Recibimos primera llamada al crear la Actividad
 		        Intent intent = getIntent();
@@ -340,7 +328,7 @@ public class DisplayMessageActivity extends Activity {
 		        }
 		
 		        lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
-		        lstAdapter = new AdaptadorDocs(this, first2);
+		        lstAdapter = new ListAdapter(this, first2);
 		        lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
 		        
 		    }
@@ -357,11 +345,11 @@ public class DisplayMessageActivity extends Activity {
 		                    
 		            		// Servicio para la descarga del archivo
 		            		url = first.get(1)[docPosition].toString();
-		            		url_back = onUrl.get(onUrl.size() - 2);
+		            		url_back = onData.get(onData.size() - 2)[0];
 		            		new docDownload().execute();
 	
 		            	} else {
-			            	if((onUrl.get(onUrl.size() - 1).equalsIgnoreCase(("/dotlrn/?page_num="+panel))) && !comunidades){
+			            	if((onData.get(onData.size() - 1)[0].equalsIgnoreCase(("/dotlrn/?page_num="+panel))) && !comunidades){
 			                	isTheHome = true;
 			                } else {
 			                	isTheHome = false;
@@ -373,7 +361,7 @@ public class DisplayMessageActivity extends Activity {
 			            	lstAdapter.notifyDataSetChanged();
 			            	lstDocs.setDividerHeight(0);
 			            	docPosition = position;
-			            	Log.d("URL", onUrl.get(onUrl.size() - 1));
+			            	Log.d("URL", onData.get(onData.size() - 1)[0]);
 			            	
 			            	url = first.get(1)[docPosition].toString();
 			            	new urlConnect().execute();
@@ -406,133 +394,6 @@ public class DisplayMessageActivity extends Activity {
         
 	}
 	
-	/**
-	 * Creamos nuestro propio adaptador para la lista con la siguiente clase: AdaptadorDocs
-	 */
-	
-	class AdaptadorDocs extends BaseAdapter {
-        
-	    Activity context;
-	    ArrayList<Object[]> data; // 0 = nombres 1 = urls 2 = type
-
-	    AdaptadorDocs(Activity context,  ArrayList<Object[]> data) {
-	    	 super();
-	         this.context = context;
-	         this.data = data;
-	    }
-	     
-	    public int getCount() {
-	    	if(data.isEmpty()) return 1;
-            return data.get(0).length;
-        }
-	    
-	    public Object getItem(int position) {
-            return position;
-        }
-	    
-	    public long getItemId(int position) {
-            return position;
-        }
-	    
-	    public void clearData() {
-	        // clear the data
-	        data.clear();
-	    }
-	    
-	    @SuppressWarnings("deprecation")
-		public View getView(int position, View convertView, ViewGroup parent) {
-	    	View item;
-	    	if(!data.isEmpty()) {
-	    	LayoutInflater inflater = context.getLayoutInflater();
-	    	
-	        item = inflater.inflate(R.layout.list_docs, null);
-	        item.setMinimumHeight(65);  
-	        item.setPadding(14, 0, 6, 0);
-	        TextView title;
-	        ImageView image;
-	        int ico;
-	        // T�tulo
-		    title = (TextView)item.findViewById(R.id.list_title);
-		    String rgxTitle;
-		    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context); // Obtenemos las preferencias
-		    
-		    // Imagen
-		    image = (ImageView)item.findViewById(R.id.folderImage);
-		    switch(Integer.parseInt(data.get(2)[position].toString())) {
-		    case 0: // Atr�s
-		    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)", "" );
-		    	title.setText(rgxTitle.trim());
-		    	ico = getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_back", null, null); // Back ico
-		    	image.setImageResource(ico);
-		    	break;
-		    case 1: // Carpeta
-		    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)", "" );
-		    	title.setText(rgxTitle.trim());
-		    	ico = getResources().getIdentifier("com.jp.miaulavirtual:drawable/icon_folder", null, null); // Folder ico
-		    	image.setImageResource(ico);
-		    	break;
-		    case 2: // PDF
-		    	rgxTitle = data.get(0)[position].toString();
-		    	title.setText(rgxTitle.trim());
-		    	ico = getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_pdf", null, null); // PDF ico
-		    	image.setImageResource(ico);
-		    	break;	    	
-		    case 3: // Excel
-		    	rgxTitle = data.get(0)[position].toString();
-		    	title.setText(rgxTitle.trim());
-		    	ico = getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_excel", null, null); // Excel ico
-		    	image.setImageResource(ico);
-		    	break;
-		    case 4: // Power Point
-		    	rgxTitle = data.get(0)[position].toString();
-		    	title.setText(rgxTitle.trim());
-		    	ico = getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_ppt", null, null); // PPT ico
-		    	image.setImageResource(ico);
-		    	break;
-		    case 5: // Word
-		    	rgxTitle = data.get(0)[position].toString();
-		    	title.setText(rgxTitle.trim());
-		    	ico = getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_word", null, null); // Word ico
-		    	image.setImageResource(ico);
-		    	break;
-		    case 6: // Comunidades y Otros
-		    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)", "" );
-		    	title.setText(rgxTitle.trim());
-		    	ico = getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_comu", null, null); // Word ico
-		    	image.setImageResource(ico);
-		    	break;
-		    default: // Otros
-		    	rgxTitle = data.get(0)[position].toString();
-		    	title.setText(rgxTitle);
-		    	ico = getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_def", null, null); // Other ico
-		    	image.setImageResource(ico);
-		    	break;
-		    }
-		    if(!prefs.getBoolean("pattern", true)) title.setText(data.get(0)[position].toString());
-	        
-	        // Imagen
-	         // 1
-	        //int pdf = getResources().getIdentifier("com.jp.miaulavirtual:drawable/icon_pdf", null, null); // 2
-	        //int excel = getResources().getIdentifier("com.jp.miaulavirtual:drawable/icon_excel", null, null); // 3
-	        
- 
-	        
-	        //switch(Integer.parseInt(data.get(2)[position].toString())) {
-	        
-	        //}
-	 
-	        //botoncito desplegable pendiente AQUI
-	    	} else {
-	    			
-	    		setRestrictedOrientation();
-	    		
-	    		LayoutInflater inflater = context.getLayoutInflater();
-	    	    item = inflater.inflate(R.layout.load_list, null);
-	    	    item.setMinimumHeight(35);
-	    	}
-	        return(item);
-	    }
-	}
 	
 	public void afterBroadcaster(String mydoc) { //Método proceso GET
 		Boolean isHome;
@@ -541,10 +402,10 @@ public class DisplayMessageActivity extends Activity {
 		TextView headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
 		headerTitle.setTextColor(getResources().getColor(R.color.list_title));
         headerTitle.setTypeface(null, 1);
-        headerTitle.setText(onName.get(onName.size() - 1));
+        headerTitle.setText(onData.get(onData.size() - 1)[1]);
 		
 		doc = Jsoup.parse(mydoc);
-        if((onUrl.get(onUrl.size() - 1).equalsIgnoreCase(("/dotlrn/?page_num="+panel))) && !comunidades){
+        if((onData.get(onData.size() - 1)[0].equalsIgnoreCase(("/dotlrn/?page_num="+panel))) && !comunidades){
         	isHome = true;
         } else {
         	isHome = false;
@@ -560,7 +421,7 @@ public class DisplayMessageActivity extends Activity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Log.d("Doc", onUrl.get(onUrl.size() - 1));
+		Log.d("Doc", onData.get(onData.size() - 1)[0]);
 		Log.d("Doc", "/dotlrn/?page_num="+panel);
 		Log.d("Doc", String.valueOf(isHome));
         first.remove(0);
@@ -578,7 +439,7 @@ public class DisplayMessageActivity extends Activity {
         }
         
         // Re-iniciamos adaptador de lista
-        lstAdapter = new AdaptadorDocs(this, first2);
+        lstAdapter = new ListAdapter(this, first2);
         lstDocs.setDividerHeight(1);
         lstDocs.setAdapter(lstAdapter);	
 	}
@@ -589,7 +450,7 @@ public class DisplayMessageActivity extends Activity {
         first2.add((Object[])objects.clone());
         }
 		lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
-        lstAdapter = new AdaptadorDocs(this, first2);
+        lstAdapter = new ListAdapter(this, first2);
         lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
 	}
 	
@@ -606,7 +467,7 @@ public class DisplayMessageActivity extends Activity {
         isInternetPresent = cd.isConnectingToInternet();
         String p2 = panel;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
-        // panel
+        // panel; We reload the app if panel change
     	panel = prefs.getString("panel", "2");
     	if(!p2.equalsIgnoreCase(panel)) {
     		Intent i = new Intent(this, MainActivity.class);
@@ -725,16 +586,16 @@ public class DisplayMessageActivity extends Activity {
 			}
 		} else if(comun) {
 			elem = melem.select("td[headers=contents_name] a[href*=/clubs/], td[headers=folders_name] a[href*=/clubs/]"); //Nombre Asignaturas String "Comunuidades"
-			s = new String[elem.size()+1]; //comunidades + 1(atr�s)
-			s[0] = "Atrás " + onName.get(onName.size() - 2);
+			s = new String[elem.size()+1]; //comunidades + 1(atrás)
+			s[0] = "Atrás " + onData.get(onData.size() - 2)[1];
 			for(Element el : elem){
 			    s[i] = el.text();
 			    i++;
 			}
 		} else {
 			elem = melem.select("td[headers=contents_name] a[href], td[headers=folders_name] a[href]"); //Nombre Asignaturas String 
-			s = new String[elem.size()+1]; //todo + 1 (atr�s)
-			s[0] = "Atrás " + onName.get(onName.size() - 2);
+			s = new String[elem.size()+1]; //todo + 1 (atrás)
+			s[0] = "Atrás " + onData.get(onData.size() - 2)[1];
 			for(Element el : elem){
 			    s[i] = el.text();
 			    i++;
@@ -751,7 +612,7 @@ public class DisplayMessageActivity extends Activity {
 		if(isHome) {
 			elem = melem.select("td[headers=contents_name] a, td[headers=folders_name] a").not("[href*=/clubs/]"); //Nombre Asignaturas String !"Comunuidades"
 			s = new String[(elem.size())+1];
-			s[0] = "/dotlrn/?page_num="+String.valueOf(panel);
+			s[0] = "/dotlrn/?page_num="+panel;
 			for(Element el : elem){
 			    s[i] = el.select("a").attr("href");
 			    i++;
@@ -759,7 +620,7 @@ public class DisplayMessageActivity extends Activity {
 		} else if(comun) {
 			elem = melem.select("td[headers=contents_name] a[href*=/clubs/], td[headers=folders_name] a[href*=/clubs/]"); //Nombre Asignaturas String "Comunuidades"
 			s = new String[elem.size()+1];
-			s[0] = onUrl.get(onUrl.size() - 2);
+			s[0] = onData.get(onData.size() - 2)[0];
 			for(Element el : elem){
 			    s[i] = el.select("a").attr("href");
 			    i++;
@@ -767,7 +628,7 @@ public class DisplayMessageActivity extends Activity {
 		} else {
 			elem = melem.select("td[headers=contents_name] a[href], td[headers=folders_name] a[href]"); //Nombre Asignaturas String 
 			s = new String[elem.size()+1];
-			s[0] = onUrl.get(onUrl.size() - 2);
+			s[0] = onData.get(onData.size() - 2)[0];
 			for(Element el : elem){
 			    s[i] = el.select("a").attr("href");
 			    i++;
@@ -854,7 +715,7 @@ public class DisplayMessageActivity extends Activity {
                 String.valueOf(progress[0]) + "% scrapped",
                 Toast.LENGTH_LONG).show(); **/
         }
-        @SuppressWarnings("deprecation")
+
 		protected void onPreExecute() {
         	// ProgressDialog (salta para mostrar el proceso del archivo descarg�ndose)
     		dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
