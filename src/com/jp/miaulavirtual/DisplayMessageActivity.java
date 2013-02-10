@@ -110,8 +110,8 @@ public class DisplayMessageActivity extends Activity {
 	private Document doc;
 	private Elements elements;
 	private String fServ; //Respuesta primera (home)
-	private ArrayList<Object[]> first = new ArrayList<Object[]>(); // Primera respuesta (home)
-	private ArrayList<Object[]> first2 = new ArrayList<Object[]>();
+	private ArrayList<String[]> data = new ArrayList<String[]>(); // Primera respuesta (home)
+	private ArrayList<String[]> dataCopy = new ArrayList<String[]>();
 	
 	//Nombres URL's y Types por las que se pasa y Boolean necesarios
 	private ArrayList<String[]> onData = new ArrayList<String[]>();
@@ -179,8 +179,8 @@ public class DisplayMessageActivity extends Activity {
         			if(isTheHome) {
 	            		if(docPosition == 0) comunidades = true; //Click Comunidades y otros
 	            		String[] theData = new String[2];
-	            		theData[0] = first.get(1)[docPosition].toString(); // url
-	            		theData[1] = first.get(0)[docPosition].toString(); // name
+	            		theData[0] = data.get(1)[docPosition].toString(); // url
+	            		theData[1] = data.get(0)[docPosition].toString(); // name
 	            		onData.add(theData);
 	            	} else { 
 	            		if(docPosition==0){ //Click atrás
@@ -189,8 +189,8 @@ public class DisplayMessageActivity extends Activity {
 	            			if(onData.size()>=2 && (onData.get(0)[0].toString().equals(onData.get(1)[0].toString()))) comunidades = true;
 	            		} else {
 	            			String[] theData = new String[2];
-	            			theData[0] = first.get(1)[docPosition].toString(); // url
-		            		theData[1] = first.get(0)[docPosition].toString(); // name
+	            			theData[0] = data.get(1)[docPosition].toString(); // url
+		            		theData[1] = data.get(0)[docPosition].toString(); // name
 		            		onData.add(theData);
 	            		}
 	            	}
@@ -209,18 +209,26 @@ public class DisplayMessageActivity extends Activity {
 	@Override
 	public Object onRetainNonConfigurationInstance() {
 		//---save whatever you want here; it takes in an Object type---
-		// we pass the Arraylist to String[] so we can put it, after, inside the 'first' and then can pass the ALL the data needed with one Object
+		// we pass the Arraylist to String[] so we can put it, after, inside the 'data' and then can pass the ALL the data needed with one Object
+		ArrayList<Object[]> passData = new ArrayList<Object[]>();
+		
+		// Save onData
 		String [][] mydata = new String[onData.size()][2];
 		mydata = onData.toArray(mydata);
-		first2.add(mydata);
 		
 		// Save the cookie
 		String[] cookie_values = cookies.values().toArray(new String[0]);
 		String[] cookie_keys = cookies.keySet().toArray(new String[0]);
-		first2.add(cookie_keys);
-		first2.add(cookie_values);
+
+		// add to oBJECT
+		passData.add(dataCopy.get(0));
+		passData.add(dataCopy.get(1));
+		passData.add(dataCopy.get(2));
+		passData.add(mydata);
+		passData.add(cookie_keys);
+		passData.add(cookie_values);
 		
-		return(first2);
+		return(passData);
 	}
 
 	
@@ -245,28 +253,28 @@ public class DisplayMessageActivity extends Activity {
     	panel = prefs.getString("panel", "2");
         
         // Get the onRetainNonConfigurationInstance()
-        final ArrayList<Object[]> first3 = (ArrayList<Object[]>) getLastNonConfigurationInstance();
+        final ArrayList<Object[]> passData = (ArrayList<Object[]>) getLastNonConfigurationInstance();
         
         try{
-	        if(first3 != null) { /* if exists it's because there was a orientation change. We need to reformat as we need the data passed */
+	        if(passData != null) { /* if exists it's because there was a orientation change. We need to reformat as we need the data passed */
 	            // onUrl and onName to ArrayList
-	            onData = new ArrayList<String[]>(Arrays.asList((String[][]) first3.get(3))); // hierarchical urls
-	            first3.remove(3);
+	            onData = new ArrayList<String[]>(Arrays.asList((String[][]) passData.get(3))); // hierarchical urls
+	            passData.remove(3);
 	            
 	            // cookies to Map
 	            cookies = new HashMap<String, String>();
-	            for (int i = 0; i < first3.get(3).length; i++) {
-			          cookies.put(first3.get(3)[i].toString(), first3.get(4)[i].toString());
+	            for (int i = 0; i < passData.get(3).length; i++) {
+			          cookies.put(passData.get(3)[i].toString(), passData.get(4)[i].toString());
 			    }
 	            scookie = cookies.toString(); // ¡IMPORTANT!
-	            first3.remove(3);
-	            first3.remove(3);
+	            passData.remove(3);
+	            passData.remove(3);
 	            
-	        	// first 3 = first 1
-	            for (Object[] objects: first3) first.add((Object[])objects.clone());
-	            // first 3 = first 2
-	            for (Object[] objects: first3) first2.add((Object[])objects.clone());
-	            first3.clear();
+	        	// passData = data
+	            for (Object[] objects: passData) data.add((String[])objects.clone());
+	            // passData = dataCopy
+	            for (Object[] objects: passData) dataCopy.add((String[])objects.clone());
+	            passData.clear();
 	            
 	            // Update de subtitle
 	            headerTitle = (TextView) findViewById(R.id.LblSubTitulo); // Título Header
@@ -276,7 +284,7 @@ public class DisplayMessageActivity extends Activity {
 	            
 	            // retrieve the same View before change orientation
 	            lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
-	            lstAdapter = new ListAdapter(this, first2);
+	            lstAdapter = new ListAdapter(this, dataCopy);
 	            lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
 	
 	        } else {
@@ -316,19 +324,16 @@ public class DisplayMessageActivity extends Activity {
 					e.printStackTrace();
 				}
 		        
-		        first.add(asigsToArray(elements, true, comunidades)); // Añadimos el Array con los  nombres de Carpetas, Asignaturas y Archivos al ArrayList - [0]
+		        data.add(asigsToArray(elements, true, comunidades)); // Añadimos el Array con los  nombres de Carpetas, Asignaturas y Archivos al ArrayList - [0]
 		        String s[] = urlsToArray(elements, true, comunidades);
-		        first.add(s); // Añadimos el Array con las  URLS al ArrayList - [1]
+		        data.add(s); // Añadimos el Array con las  URLS al ArrayList - [1]
 		        int mysize = s.length;
-		        first.add(typeToArray(elements, true, comunidades, mysize)); // Añadimos el Array con los TYPES al ArrayList - [2]
+		        data.add(typeToArray(elements, true, comunidades, mysize)); // Añadimos el Array con los TYPES al ArrayList - [2]
 		        
 		        //Copia de FIRST que puede ser borrada
-		        for (Object[] objects: first) {
-		        first2.add((Object[])objects.clone());
-		        }
-		
+		        copyListFirst();
 		        lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
-		        lstAdapter = new ListAdapter(this, first2);
+		        lstAdapter = new ListAdapter(this, dataCopy);
 		        lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
 		        
 		    }
@@ -337,14 +342,14 @@ public class DisplayMessageActivity extends Activity {
 	            public void onItemClick(AdapterView<?> a, View v, int position, long id) { //Al clicar X item de la lista
 	            	isInternetPresent = cd.isConnectingToInternet();
 	            	if(isInternetPresent) {
-		            	if(!(first.get(2)[position].toString().equals("0")) && !(first.get(2)[position].toString().equals("1")) && !(first.get(2)[position].toString().equals("6"))) {
+		            	if(!(data.get(2)[position].toString().equals("0")) && !(data.get(2)[position].toString().equals("1")) && !(data.get(2)[position].toString().equals("6"))) {
 		            		docPosition = position;
 		            		Log.d("TIPO", "DOCUMENTO");
 		            		// ProgressDialog (salta para mostrar el proceso del archivo descargándose)
 		            		dialog = new ProgressDialog(mycontext);
 		                    
 		            		// Servicio para la descarga del archivo
-		            		url = first.get(1)[docPosition].toString();
+		            		url = data.get(1)[docPosition].toString();
 		            		url_back = onData.get(onData.size() - 2)[0];
 		            		new docDownload().execute();
 	
@@ -363,7 +368,7 @@ public class DisplayMessageActivity extends Activity {
 			            	docPosition = position;
 			            	Log.d("URL", onData.get(onData.size() - 1)[0]);
 			            	
-			            	url = first.get(1)[docPosition].toString();
+			            	url = data.get(1)[docPosition].toString();
 			            	new urlConnect().execute();
 		            	}
 		            } else {
@@ -424,33 +429,29 @@ public class DisplayMessageActivity extends Activity {
 		Log.d("Doc", onData.get(onData.size() - 1)[0]);
 		Log.d("Doc", "/dotlrn/?page_num="+panel);
 		Log.d("Doc", String.valueOf(isHome));
-        first.remove(0);
-        first.remove(0);
-        first.remove(0);
-		first.add(asigsToArray(elements, isHome, comunidades)); //Array con los  nombres de Carpetas, Asignaturas y Archivos
+        data.remove(0);
+        data.remove(0);
+        data.remove(0);
+		data.add(asigsToArray(elements, isHome, comunidades)); //Array con los  nombres de Carpetas, Asignaturas y Archivos
 		String s[] = urlsToArray(elements, isHome, comunidades);
-		first.add(s);
+		data.add(s);
 		int mysize =  s.length;
-		first.add(typeToArray(elements, isHome, comunidades, mysize));
+		data.add(typeToArray(elements, isHome, comunidades, mysize));
 		
 		//Copia de FIRST que puede ser borrada
-        for (Object[] objects: first) {
-        first2.add((Object[])objects.clone());
-        }
+		copyListFirst();
         
         // Re-iniciamos adaptador de lista
-        lstAdapter = new ListAdapter(this, first2);
+        lstAdapter = new ListAdapter(this, dataCopy);
         lstDocs.setDividerHeight(1);
         lstDocs.setAdapter(lstAdapter);	
 	}
 	
 	public void afterBroadcaster2() {
 		//Copia de FIRST que puede ser borrada
-        for (Object[] objects: first) {
-        first2.add((Object[])objects.clone());
-        }
+		copyListFirst();
 		lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
-        lstAdapter = new ListAdapter(this, first2);
+        lstAdapter = new ListAdapter(this, dataCopy);
         lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
 	}
 	
@@ -1040,6 +1041,13 @@ public class DisplayMessageActivity extends Activity {
 	    startOk3(mycontext, id, task_status);
 
     }	
+    
+    public void copyListFirst() {
+		//Copia de FIRST que puede ser borrada
+        for (String[] string: data) {
+        dataCopy.add((String[])string.clone());
+        }
+    }
 	
     /**
      * Pasa cookies en formato String {cookies} a Map que es el formato utilizado poara insertar cookies por JSoup

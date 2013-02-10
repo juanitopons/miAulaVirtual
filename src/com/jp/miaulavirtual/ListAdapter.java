@@ -22,9 +22,9 @@ import android.widget.TextView;
 class ListAdapter extends BaseAdapter {
     
     Activity context;
-    ArrayList<Object[]> data; // 0 = names 1 = urls 2 = types
+    ArrayList<String[]> data; // 0 = names 1 = urls 2 = types
 
-    public ListAdapter(Activity context,  ArrayList<Object[]> data) {
+    public ListAdapter(Activity context,  ArrayList<String[]> data) {
     	 super();
          this.context = context;
          this.data = data;
