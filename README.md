@@ -27,6 +27,7 @@ Android version compatibility: 2.0 and onward
 + Compatibility with all virtual classroom themes and personalizations
 
 ## To do ##
++ Add image type
 + Let students select period days of task lists
 + Remove keyboard just after sending the login
 + Clean code
@@ -52,11 +53,10 @@ None yet
 + <b>SOLVED: <i>Added support for ZEN style cookie</i></b> - Error getting resoucerse identifier
 
 ## Upcoming features ##
-+ Organize archive in subjects' folders
++ Organize archive in subjects' folders <b><i>DONE</i></b>
 + Switch between years
 + Archive management
 + Task management (Sync Students tasks with Google Tasks)
 + Cool calendar (?)
 + Webmail integration (?)
 + Remote repository of college notes created by students through the application (?)
-+ New activity where student can see a list of already downloaded documents and they have not deleted

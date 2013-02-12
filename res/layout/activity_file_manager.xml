@@ -1,14 +1,21 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".FileManager" >
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+		
+		<TextView android:id="@+id/LblSubTitulo2"
+    	android:layout_width="match_parent"
+    	android:layout_height="wrap_content"
+    	android:textStyle="bold"
+    	android:textColor="#dddddd"
+    	android:gravity="center"
+    	android:layout_marginTop="14dp"
+    	android:layout_marginBottom="14dp"
+    	android:textSize="15sp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:text="@string/hello_world" />
+    <ListView android:id="@+id/LstDocs2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
-</RelativeLayout>
+</LinearLayout>

@@ -46,11 +46,9 @@ import org.jsoup.select.Elements;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
@@ -103,7 +101,6 @@ public class DisplayMessageActivity extends Activity {
 	private String panel; // control de panel number of Documents section
 	
 	// Valores del HOME de documentos
-	private String fServ; // the response we caught from the MainActivity
 	private ArrayList<String[]> data = new ArrayList<String[]>(); // connection data (Names, Urls, Types)
 	private ArrayList<String[]> dataCopy = new ArrayList<String[]>(); // connection data copy that we can .clear
 	private ArrayList<String[]> onData = new ArrayList<String[]>(); // we need to know where the user is and where he has been to provide navigation back
@@ -119,81 +116,80 @@ public class DisplayMessageActivity extends Activity {
 	private ProgressDialog dialog;
 	private TextView headerTitle;
 	
-	private DataUpdateReceiver dataUpdateReceiver;
-	
-	//BroadcastReceiver, recibe variables de nuestro servicio posteriormente ejecutado CurlService. Lo utilizamos para poder enviar mensaje de excepciones o de procesos acabados.
-	private class DataUpdateReceiver extends BroadcastReceiver {
-	    @Override
-	    public void onReceive(Context context, Intent intent) {
-	        if (intent.getAction().equals(DisplayMessageActivity.RESPONSE)) {
-	        	fServ = intent.getStringExtra("response");
-        		if(fServ.equals("cont")) {
-        			Toast.makeText(getBaseContext(),getString(R.string.toast_1), Toast.LENGTH_SHORT).show();
-        		} else if(fServ.equals("oops")) {
-        			int id =  intent.getIntExtra("id", 5);
-        			String msg = null;
-        			Log.d("Broadcaster", String.valueOf(id));
-        		    switch(id) {
-        		    case 0: // cancelled
-        		    	dialog.dismiss();
-        		    	msg = getString(R.string.toast_0);
-        		    	break;
-        		    case 2: // not enough free storage space
-        		    	dialog.dismiss();
-        		    	msg = getString(R.string.toast_2);
-        		    	break;
-        		    case 3: // invalid URL
-        		    	dialog.dismiss();
-        		    	msg = getString(R.string.toast_3);
-        		    	break;
-        		    case 4: // file not found
-        		    	dialog.dismiss();
-        		    	msg = getString(R.string.toast_4);
-        		    	break;
-        		    case 5: // general error
-        		    	msg = getString(R.string.toast_5);
-        		    	break;
-        		    case 6: // conection problems
-        		    	msg = getString(R.string.toast_6);
-        		    	afterBroadcaster2();
-        		    	break;
-        		    case 7: // conection problems 2
-        		    	dialog.dismiss();
-        		    	msg = getString(R.string.toast_6);
-        		    	afterBroadcaster2();
-        		    	break;
-        		    case 8: // general error 2
-        		    	dialog.dismiss();
-        		    	msg = getString(R.string.toast_5);
-        		    	afterBroadcaster2();
-        		    	break;
-        		    } 
-        			Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT).show();
-        		} else {
-        			if(isTheHome) {
-	            		if(clickedPosition == 0) comunidades = true; //Click Comunidades y otros
-	            		String[] theData = new String[2];
-	            		theData[0] = data.get(1)[clickedPosition].toString(); // url
-	            		theData[1] = data.get(0)[clickedPosition].toString(); // name
-	            		onData.add(theData);
-	            	} else { 
-	            		if(clickedPosition==0){ //Click atrás
-	            			onData.remove(onData.size() - 1); // remove data
-	            			comunidades = false;
-	            			if(onData.size()>=2 && (onData.get(0)[0].toString().equals(onData.get(1)[0].toString()))) comunidades = true;
-	            		} else {
-	            			String[] theData = new String[2];
-	            			theData[0] = data.get(1)[clickedPosition].toString(); // url
-		            		theData[1] = data.get(0)[clickedPosition].toString(); // name
-		            		onData.add(theData);
-	            		}
-	            	}
-	        		afterBroadcaster(fServ);
-        		}
-        		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-        		task_status = true;
-	        }
-	    }
+    public void process(Boolean status, int id) {
+    	if(status) {
+			Toast.makeText(getBaseContext(),getString(R.string.toast_1), Toast.LENGTH_SHORT).show();
+		} else {
+			String msg = null;
+		    switch(id) {
+		    case 0: // cancelled
+		    	dialog.dismiss();
+		    	msg = getString(R.string.toast_0);
+		    	break;
+		    case 2: // not enough free storage space
+		    	dialog.dismiss();
+		    	msg = getString(R.string.toast_2);
+		    	break;
+		    case 3: // invalid URL
+		    	dialog.dismiss();
+		    	msg = getString(R.string.toast_3);
+		    	break;
+		    case 4: // file not found
+		    	dialog.dismiss();
+		    	msg = getString(R.string.toast_4);
+		    	break;
+		    case 5: // general error
+		    	msg = getString(R.string.toast_5);
+		    	break;
+		    case 6: // conection problems
+		    	msg = getString(R.string.toast_6);
+		    	afterBroadcaster2();
+		    	break;
+		    case 7: // conection problems 2
+		    	dialog.dismiss();
+		    	msg = getString(R.string.toast_6);
+		    	afterBroadcaster2();
+		    	break;
+		    case 8: // general error 2
+		    	dialog.dismiss();
+		    	msg = getString(R.string.toast_5);
+		    	afterBroadcaster2();
+		    	break;
+		    case 9: // conection problems 2
+		    	dialog.dismiss();
+		    	msg = getString(R.string.toast_7);
+		    	afterBroadcaster2();
+		    	break;
+		    } 
+			Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT).show();
+		}  
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+		task_status = true;
+    }
+
+	public void process(String out) {
+		String response = out;
+		if(isTheHome) {
+    		if(clickedPosition == 0) comunidades = true; //Click Comunidades y otros
+    		String[] theData = new String[2];
+    		theData[0] = data.get(1)[clickedPosition].toString(); // url
+    		theData[1] = data.get(0)[clickedPosition].toString(); // name
+    		onData.add(theData);
+    	} else { 
+    		if(clickedPosition==0){ //Click atrás
+    			onData.remove(onData.size() - 1); // remove data
+    			comunidades = false;
+    			if(onData.size()>=2 && (onData.get(0)[0].toString().equals(onData.get(1)[0].toString()))) comunidades = true;
+    		} else {
+    			String[] theData = new String[2];
+    			theData[0] = data.get(1)[clickedPosition].toString(); // url
+        		theData[1] = data.get(0)[clickedPosition].toString(); // name
+        		onData.add(theData);
+    		}
+    	}
+		afterBroadcaster(response);
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+		task_status = true;
 	}
 	
 	/**
@@ -306,8 +302,8 @@ public class DisplayMessageActivity extends Activity {
 			    pass = intent.getStringExtra("pass");
 			    
 			    // Recibimos datos HOME
-		        fServ = intent.getStringExtra("out");
-				Document doc = Jsoup.parse(fServ);
+		        String response = intent.getStringExtra("out");
+				Document doc = Jsoup.parse(response);
 				Elements elements = null;
 		        try {
 		        	elements = scrap2(doc);
@@ -315,7 +311,7 @@ public class DisplayMessageActivity extends Activity {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-		        
+		                
 		        data.add(asigsToArray(elements, true, comunidades)); // Añadimos el Array con los  nombres de Carpetas, Asignaturas y Archivos al ArrayList - [0]
 		        String s[] = urlsToArray(elements, true, comunidades);
 		        data.add(s); // Añadimos el Array con las  URLS al ArrayList - [1]
@@ -383,13 +379,7 @@ public class DisplayMessageActivity extends Activity {
 	        setRestrictedOrientation();
 	        Toast.makeText(getBaseContext(),getString(R.string.panel_error2), Toast.LENGTH_LONG).show();
 		}
-	    
-	    if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
-        IntentFilter intentFilter = new IntentFilter(DisplayMessageActivity.RESPONSE);
-        registerReceiver(dataUpdateReceiver, intentFilter);
-        
 	}
-	
 	
 	public void afterBroadcaster(String mydoc) { //Método proceso GET
 		Boolean isHome;
@@ -493,7 +483,6 @@ public class DisplayMessageActivity extends Activity {
     public void onDestroy()
     {
         super.onDestroy();
-        if(dataUpdateReceiver!=null) unregisterReceiver(dataUpdateReceiver);
         
         //ELIMINAR COOKIE DEL CACHE para que siempre que se inicie la aplicacion haga POST
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -664,23 +653,26 @@ public class DisplayMessageActivity extends Activity {
 	
 	/* TASKS */
 	
-	private class docDownload extends AsyncTask<Void, Integer, Void> {
+	private class docDownload extends AsyncTask<Void, Integer, Integer> {
 		String url_back;
 		protected docDownload(String url_back) {
 			this.url_back = url_back;
 		}
 		
-    	protected Void doInBackground(Void... params) {
-        	if(cookies != null) {
+    	protected Integer doInBackground(Void... params) {
+        	Integer id = 0;
+    		if(cookies != null) {
         		Log.d("Document", "getDoc AHORA");
         		try {
-        			getDoc(mycontext, url_back);
+        			id = getDoc(mycontext, url_back);
             	}catch(SocketTimeoutException e)
             	{
-            		startOk3(mycontext, 6, false);
+            		task_status = false;
+            		id = 6;
             	}catch(IOException e)
             	{
-            		startOk3(mycontext, 5, false);
+            		task_status = false;
+            		id = 5;
             	}
         		Log.d("Cookie", "HAY COOKIE!");
         	} else {
@@ -688,13 +680,15 @@ public class DisplayMessageActivity extends Activity {
         			setData();
             	}catch(SocketTimeoutException e)
             	{
-            		startOk3(mycontext, 6, false);
+            		task_status = false;
+            		id = 6;
             	}catch(IOException e)
             	{
-            		startOk3(mycontext, 5, false);
+            		task_status = false;
+            		id = 5;
             	}
         	}
-            return null;
+            return id;
         }
     	
         protected void onProgressUpdate(Integer... progress) {
@@ -722,6 +716,11 @@ public class DisplayMessageActivity extends Activity {
 	        dialog.show();
 	        setRestrictedOrientation();
         }
+		
+		protected void onPostExecute(Integer id) {
+			Log.d("ID", String.valueOf(id));
+			process(task_status, id);
+		}
     }
     
     private class urlConnect extends AsyncTask<Void, Integer, Response> {
@@ -769,7 +768,14 @@ public class DisplayMessageActivity extends Activity {
 	            	}
 	            } else if(res.hasCookie("fs_block_id")) { // No tiene "ad_user_login" pero si "fs_block_id" --> Cookie NO vencida
 	            	Log.d("Cookie", "No vencida: GET hecho");
-	            	startOk2(response, mycontext);
+	            	String out = "";  
+	                try {
+	        			out = response.parse().body().toString();
+	        		} catch (IOException e) {
+	        			// TODO Auto-generated catch block
+	        			e.printStackTrace();
+	        		}
+	                process(out);
 	            } else if(res.hasCookie("ad_session_id")) { // Usuario y contrase�a incorrectos. No tiene ni "ad_user_login" ni "fs_block_id"
 	            	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
 	            	Editor editor = prefs.edit();
@@ -781,38 +787,21 @@ public class DisplayMessageActivity extends Activity {
 	                new urlConnect().execute(); //REejecutamos la tarea (POST)
 
 	            } else if(res.hasCookie("tupi_style") || res.hasCookie("zen_style")) { // Cookie correcta, sesi�n POST ya habilitada. GET correcto. Procede.
-	            	startOk2(response, mycontext);
+	            	String out = "";  
+	                try {
+	        			out = response.parse().body().toString();
+	        		} catch (IOException e) {
+	        			// TODO Auto-generated catch block
+	        			e.printStackTrace();
+	        		}
+	                process(out);
 	            }
 	        } else {
 	        	Log.d("Exception", "Timeout2");
-	        	startOk3(mycontext, 6, false);
+	        	process(false, 6);
 	        }
         }
     }
-    
-    private void startOk2(Response response, Context context) {
-    	String out = "";  
-    	Intent bcIntent = new Intent();
-        bcIntent.setAction(RESPONSE);
-        try {
-			out = response.parse().body().toString();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        bcIntent.putExtra("response", out);
-        sendBroadcast(bcIntent);
-    	}
-    
-    private void startOk3(Context context, int id, Boolean status) {
-    	Intent bcIntent = new Intent();
-        bcIntent.setAction(RESPONSE);
-        if(status) bcIntent.putExtra("response", "cont");
-        if(!status) bcIntent.putExtra("response", "oops");
-        bcIntent.putExtra("id", id);
-        Log.d("StartOk3", String.valueOf(id));
-        sendBroadcast(bcIntent);
-    	}
     
     public void setData() throws IOException, SocketTimeoutException {
     	
@@ -848,8 +837,9 @@ public class DisplayMessageActivity extends Activity {
 	 * @return String - Tama�o del archivo en formato del SI
 	 * @throws IOException
 	 */
-    public void getDoc(Context mycontext, String url_back) throws IOException, SocketTimeoutException {
+    public int getDoc(Context mycontext, String url_back) throws IOException, SocketTimeoutException {
     	URI uri;
+    	int id = 0;
     	Log.d("Document", url);
     	String request = null;
 		// Codificamos la URL del archivo
@@ -879,7 +869,7 @@ public class DisplayMessageActivity extends Activity {
         		new docDownload(url_back).execute(); //REejecutamos la tarea docDownload
         	}
     	} else if(res.hasCookie("fs_block_id")) {
-    		downloadFile(request);  
+    		id = downloadFile(request);  
         } else if(res.hasCookie("ad_session_id")) { // Cookie Vencida
         	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
         	Editor editor = prefs.edit();
@@ -891,11 +881,13 @@ public class DisplayMessageActivity extends Activity {
             Log.d("Cookie", "COOKIE VENCIDA");
             new docDownload(url_back).execute(); //REejecutamos la tarea (POST)
         } else if(res.hasCookie("tupi_style") || res.hasCookie("zen_style")) { // Cookie correcta, sesi�n POST ya habilitada. GET correcto. Procede.
-        	downloadFile(request);
+        	id = downloadFile(request);
         }
+    	Log.d("ID", String.valueOf(id));
+    	return id;
     }
     
-    public void downloadFile(String request) {
+    public int downloadFile(String request) {
     	URL url2;
 	    URLConnection conn;
 	    int lastSlash;
@@ -917,86 +909,105 @@ public class DisplayMessageActivity extends Activity {
     		
     		// Directory creation
     		String root = Environment.getExternalStorageDirectory().toString();
-    	    File myDir = new File(root + "/Android/data/com.jp.miaulavirtual/files");    
-    	    myDir.mkdirs();
-    	    
-    	    // Document creation
-    	    String name = url.toString().substring(lastSlash + 1);
-    	    file = new File (myDir, name);
-    	    Log.d("Document", name);
-    	    fileSize = (long) file.length();
-    	    
-    	    // Check if we have already downloaded the whole file
-    	    if (file.exists ()) {
-    	    	dialog.setProgress(100); // full progress if file already donwloaded
-    	    } else {
-		        // Start the connection with COOKIES (we already verified that the cookies aren't expired and we can use them)
-	    	    url2 = new URL(request);
-		        conn = url2.openConnection();
-		        conn.setUseCaches(false);
-		        conn.setRequestProperty("Cookie", cookies);
-		        conn.setConnectTimeout(10*1000);
-		        conn.setReadTimeout(20*1000);
-		        fileSize = (long) conn.getContentLength();
-		        
-		        // Check if we have necesary space
-		        if(fileSize >= myDir.getUsableSpace()) { task_status = false; id = 2;
-		        } else {
-		        	
-			        // Start downloading
-			        inStream = new BufferedInputStream(conn.getInputStream());
-			        fileStream = new FileOutputStream(file);
-			        outStream = new BufferedOutputStream(fileStream, BUFFER_SIZE);
-			        byte[] data = new byte[BUFFER_SIZE];
-			        int bytesRead = 0;
-			        int setMax = (conn.getContentLength()/1024);
-			        dialog.setMax(setMax);
-		
-			        while(task_status && (bytesRead = inStream.read(data, 0, data.length)) >= 0)
-			        {
-			            outStream.write(data, 0, bytesRead);
-			            // update progress bar
-			            dialog.incrementProgressBy((int)(bytesRead/1024));
-			        }
+    		Boolean isSDPresent = android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED);
+    		// check if is there external storage
+    		if(!isSDPresent) {
+    			task_status = false;
+    			id = 9;
+    		} else {
+	    		String folder;
+	    		if(comunidades) {
+	    			folder = onData.get(2)[1];
+	    		} else {
+	    			folder = onData.get(1)[1];
+	    		}
+	    		folder = folder.replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)", "" );
+	    		folder = folder.toString().trim();
+	    		Log.d("Folder", folder);
+	    	    File myDir = new File(root + "/Android/data/com.jp.miaulavirtual/files/"+folder);
+	    	    myDir.mkdirs();
+	    	    
+	    	    // Document creation
+	    	    String name = url.toString().substring(lastSlash + 1);
+	    	    file = new File (myDir, name);
+	    	    Log.d("Document", name);
+	    	    fileSize = (long) file.length();
+	    	    
+	    	    // Check if we have already downloaded the whole file
+	    	    if (file.exists ()) {
+	    	    	dialog.setProgress(100); // full progress if file already donwloaded
+	    	    } else {
+			        // Start the connection with COOKIES (we already verified that the cookies aren't expired and we can use them)
+		    	    url2 = new URL(request);
+			        conn = url2.openConnection();
+			        conn.setUseCaches(false);
+			        conn.setRequestProperty("Cookie", cookies);
+			        conn.setConnectTimeout(10*1000);
+			        conn.setReadTimeout(20*1000);
+			        fileSize = (long) conn.getContentLength();
 			        
-			        // Close stream
-			        outStream.close();
-			        fileStream.close();
-			        inStream.close();
-			        
-			        // Delete file if Cancel button
-			        if(!task_status) file.delete(); id=0;
-			        
+			        // Check if we have necesary space
+			        if(fileSize >= myDir.getUsableSpace()) { task_status = false; id = 2;
+			        } else {
+			        	
+				        // Start downloading
+				        inStream = new BufferedInputStream(conn.getInputStream());
+				        fileStream = new FileOutputStream(file);
+				        outStream = new BufferedOutputStream(fileStream, BUFFER_SIZE);
+				        byte[] data = new byte[BUFFER_SIZE];
+				        int bytesRead = 0;
+				        int setMax = (conn.getContentLength()/1024);
+				        dialog.setMax(setMax);
+			
+				        while(task_status && (bytesRead = inStream.read(data, 0, data.length)) >= 0)
+				        {
+				            outStream.write(data, 0, bytesRead);
+				            // update progress bar
+				            dialog.incrementProgressBy((int)(bytesRead/1024));
+				        }
+				        
+				        // Close stream
+				        outStream.close();
+				        fileStream.close();
+				        inStream.close();
+				        
+				        // Delete file if Cancel button
+				        if(!task_status) {
+				        	file.delete(); 
+				        	if(myDir.listFiles().length<=0) myDir.delete(); 
+				        	id=0;
+				        }  
+				    }
 			    }
-		    }
-    	    Log.d("Status", String.valueOf(task_status));
-    	    // Open file
-	        if(task_status) {
-	        	Log.d("Type", "Hola2");
-	        	dialog.dismiss();
-                Intent intent = new Intent();
-                intent.setAction(android.content.Intent.ACTION_VIEW);
-              
-                MimeTypeMap mime = MimeTypeMap.getSingleton();
-                // Get extension file
-                String file_s = file.toString();
-                String extension = "";
-
-        		int i = file_s.lastIndexOf('.');
-        		int p = Math.max(file_s.lastIndexOf('/'), file_s.lastIndexOf('\\'));
-
-        		if (i > p) {
-        		    extension = file_s.substring(i+1);
-        		}
-        		
-        		// Get extension reference
-                String doc_type = mime.getMimeTypeFromExtension(extension);
-                
-                Log.d("Type", extension);
-             
-                intent.setDataAndType(Uri.fromFile(file),doc_type);
-                startActivity(intent);
-	        }
+	    	    Log.d("Status", String.valueOf(task_status));
+	    	    // Open file
+		        if(task_status) {
+		        	Log.d("Type", "Hola2");
+		        	dialog.dismiss();
+	                Intent intent = new Intent();
+	                intent.setAction(android.content.Intent.ACTION_VIEW);
+	              
+	                MimeTypeMap mime = MimeTypeMap.getSingleton();
+	                // Get extension file
+	                String file_s = file.toString();
+	                String extension = "";
+	
+	        		int i = file_s.lastIndexOf('.');
+	        		int p = Math.max(file_s.lastIndexOf('/'), file_s.lastIndexOf('\\'));
+	
+	        		if (i > p) {
+	        		    extension = file_s.substring(i+1);
+	        		}
+	        		
+	        		// Get extension reference
+	                String doc_type = mime.getMimeTypeFromExtension(extension);
+	                
+	                Log.d("Type", extension);
+	             
+	                intent.setDataAndType(Uri.fromFile(file),doc_type);
+	                startActivity(intent);
+		        }
+    		}
 	    }
 	    catch(MalformedURLException e) // Invalid URL
 	    {
@@ -1012,6 +1023,7 @@ public class DisplayMessageActivity extends Activity {
 	    }
 	    catch(SocketTimeoutException e) // time out
 	    {
+	    	Log.d("Timeout", "Timeout");
 	    	task_status = false;
 	    	if(file.exists ()) { file.delete(); }
 	    	id = 7;
@@ -1025,7 +1037,8 @@ public class DisplayMessageActivity extends Activity {
 	    Log.d("Type", String.valueOf(id));
 	    Log.d("StartOk3", "¿Como he llegado hasta aquí?");
 	    // notify completion
-	    startOk3(mycontext, id, task_status);
+	    Log.d("ID", String.valueOf(id));
+	    return id;
 
     }	
     

@@ -354,15 +354,24 @@ public class MainActivity extends Activity {
         }
     }
     private void startOk(Response response, Context context) {
-    	String out = "";  
+    	Elements count = null;
+    	String out = "";
     	Intent i = new Intent(this, TabsActivity.class);
     	  try {
-			out = response.parse().body().toString();
+			count = response.parse().body().select("td[headers=contents_name] a[href], td[headers=folders_name] a[href]");;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	  i.putExtra("out", out);
+    	  if(count.size()>0) {
+    		  try {
+				out = response.parse().body().toString();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		  i.putExtra("out", out);
+    	  }
     	  i.putExtra("user", user);
     	  i.putExtra("pass", pass);
     	  i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -373,6 +382,7 @@ public class MainActivity extends Activity {
     	Intent i = new Intent(this, TabsActivity.class);
     	i.putExtra("user", user);
   	  	i.putExtra("pass", pass);
+  	  	Log.d("Here i am", "Hi there!");
   	  	i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
   	  	startActivity(i);
     	}
