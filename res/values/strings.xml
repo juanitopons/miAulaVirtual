@@ -2,31 +2,31 @@
 <resources>
 
     <string name="app_name">miAulaVirtual</string>
-	<string name="no_internet">Oops..! No existe conexión a Internet.</string>
-    
-    <!--- MAIN -->
+    <string name="no_internet">Oops..! No existe conexión a Internet.</string>
+
+    <!-- - MAIN -->
     <string name="edit_message">Pon tu mensaje!</string>
     <string name="user">Usuario UV</string>
     <string name="pass">Contraseña</string>
     <string name="button_send">Entrar</string>
     <string name="bad_data">Usuario o contraseña incorrectos</string>
-    
-    <!--- DISPLAY -->
+
+    <!-- - DISPLAY -->
     <string name="panel_error">¡No tienes ninguna carpeta! Esto seguramente es debido a una mala configuración del Panel de Documentos.\n Dirígete a <b>Preferencias</b> para saber más al respecto</string>
     <string name="panel_error2">El nº de Panel de Documentos indicado no existe</string>
 
-	<!--- DOCS -->
-	<string name="mydocs">Mis Documentos</string>
-	<string name="t_docs">Documentos</string>
+    <!-- - DOCS -->
+    <string name="mydocs">Mis Documentos</string>
+    <string name="t_docs">Documentos</string>
 
-    <!--- SETTINGS -->
+    <!-- - SETTINGS -->
     <string name="menu_settings">Preferencias</string>
     <string name="cerrar_sesion">Cerrar Sesión</string>
-    
-    <!--- ACTIVITY -->
+
+    <!-- - ACTIVITY -->
     <string name="newapi">NewApi</string>
-    
-    <!--- SERVICE -->
+
+    <!-- - SERVICE -->
     <string name="cancel_button">Cancelar</string>
     <string name="process">Procesando&#8230;</string>
     <string name="toast_0">¡Descarga cancelada!</string>
@@ -36,8 +36,12 @@
     <string name="toast_4">Error: archivo no encontrado!</string>
     <string name="toast_5">Oops..! Ha ocurrido algún error.</string>
     <string name="toast_6">Problemas de conexión&#8230;</string>
-    
-    <!--- FOOTER -->
+
+    <!-- - FOOTER -->
     <string name="footer">Copyright 2013 Juan Pons - GNU GPL v3.0 | @juanitopons</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_file_manager">FileManager</string>
+    <string name="title_activity_tabs">TabsActivity</string>
+    <string name="title_activity_file_manager2">FileManager2</string>
 
 </resources>

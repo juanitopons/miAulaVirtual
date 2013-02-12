@@ -202,10 +202,10 @@ public class DisplayMessageActivity extends Activity {
 	
 	@Override
 	public Object onRetainNonConfigurationInstance() {
+	 
 		//---save whatever you want here; it takes in an Object type---
 		// we pass the Arraylist to String[] so we can put it, after, inside the 'data' and then can pass the ALL the data needed with one Object
 		ArrayList<Object[]> passData = new ArrayList<Object[]>();
-		
 		// Save onData
 		String [][] mydata = new String[onData.size()][2];
 		mydata = onData.toArray(mydata);
@@ -223,8 +223,7 @@ public class DisplayMessageActivity extends Activity {
 		passData.add(cookie_values);
 		
 		return(passData);
-	}
-
+	} 
 	
 	@SuppressLint("NewApi")
 	@Override
@@ -232,6 +231,7 @@ public class DisplayMessageActivity extends Activity {
 		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_display_message);
+		Log.d("Lifecycle8", "In onCreate()");
 		// Make sure we're running on Honeycomb or higher to use ActionBar APIs
         
         // creating connection detector class instance
@@ -249,7 +249,7 @@ public class DisplayMessageActivity extends Activity {
         final ArrayList<Object[]> passData = (ArrayList<Object[]>) getLastNonConfigurationInstance();
         
         try{
-	        if(passData != null) { /* if exists it's because there was a orientation change. We need to reformat as we need the data passed */
+	        if(passData != null) { 
 	            // onUrl and onName to ArrayList
 	            onData = new ArrayList<String[]>(Arrays.asList((String[][]) passData.get(3))); // hierarchical urls
 	            passData.remove(3);
@@ -327,8 +327,7 @@ public class DisplayMessageActivity extends Activity {
 		        lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
 		        lstAdapter = new ListAdapter(this, dataCopy);
 		        lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
-		        
-		    }
+	        }    
 	        lstDocs.setOnItemClickListener(new OnItemClickListener() {
 	            @Override
 	            public void onItemClick(AdapterView<?> a, View v, int position, long id) { //Al clicar X item de la lista
@@ -451,6 +450,7 @@ public class DisplayMessageActivity extends Activity {
     public void onStart()
     {
         super.onStart();
+        Log.d("Lifecycle8", "In onStart()");
         
     }
     
@@ -468,22 +468,26 @@ public class DisplayMessageActivity extends Activity {
     		startActivity(i); 
     		finish();
     	}
+    	Log.d("Lifecycle8", "In onRestart()");
     }
     
     public void onResume()
     {
         super.onResume();
+        Log.d("Lifecycle8", "In onResume()");
 
     }
     
     public void onPause()
     {
         super.onPause();
+        Log.d("Lifecycle8", "In onPause()");
     }
     
     public void onStop()
     {
         super.onStop();
+        Log.d("Lifecycle8", "In onStop()");
     }
     
     public void onDestroy()
@@ -496,6 +500,8 @@ public class DisplayMessageActivity extends Activity {
         Editor editor = prefs.edit(); //eliminamos la cookie
     	editor.remove("cookies"); //ELIMINAMOS LA COOKIE DE LA PASADA VEZ
     	editor.commit();
+    	
+    	Log.d("Lifecycle8", "In onDestroy()");
     }
 
 	

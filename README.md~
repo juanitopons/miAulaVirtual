@@ -27,6 +27,7 @@ Android version compatibility: 2.0 and onward
 + Compatibility with all virtual classroom themes and personalizations
 
 ## To do ##
++ Let student select period days of task lists
 + Remove keyboard just after sending the login
 + Clean code
 + Preference option for filtering empty folders

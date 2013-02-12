@@ -355,7 +355,7 @@ public class MainActivity extends Activity {
     }
     private void startOk(Response response, Context context) {
     	String out = "";  
-    	Intent i = new Intent(this, DisplayMessageActivity.class);
+    	Intent i = new Intent(this, TabsActivity.class);
     	  try {
 			out = response.parse().body().toString();
 		} catch (IOException e) {
@@ -370,7 +370,7 @@ public class MainActivity extends Activity {
     	}
     
     private void startOk2(Context context, int id, Boolean status) {
-    	Intent i = new Intent(this, DisplayMessageActivity.class);
+    	Intent i = new Intent(this, TabsActivity.class);
     	i.putExtra("user", user);
   	  	i.putExtra("pass", pass);
   	  	i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
