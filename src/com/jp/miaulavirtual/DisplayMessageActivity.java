@@ -101,8 +101,9 @@ public class DisplayMessageActivity extends Activity {
 	private String panel; // control de panel number of Documents section
 	
 	// Valores del HOME de documentos
-	private ArrayList<String[]> data = new ArrayList<String[]>(); // connection data (Names, Urls, Types)
-	private ArrayList<String[]> dataCopy = new ArrayList<String[]>(); // connection data copy that we can .clear
+	String[] names;
+	String[] urls;
+	String[] types;
 	private ArrayList<String[]> onData = new ArrayList<String[]>(); // we need to know where the user is and where he has been to provide navigation back
 	
 	//Nombres URL's y Types por las que se pasa y Boolean necesarios
@@ -172,8 +173,8 @@ public class DisplayMessageActivity extends Activity {
 		if(isTheHome) {
     		if(clickedPosition == 0) comunidades = true; //Click Comunidades y otros
     		String[] theData = new String[2];
-    		theData[0] = data.get(1)[clickedPosition].toString(); // url
-    		theData[1] = data.get(0)[clickedPosition].toString(); // name
+    		theData[0] = urls[clickedPosition].toString(); // url
+    		theData[1] = names[clickedPosition].toString(); // name
     		onData.add(theData);
     	} else { 
     		if(clickedPosition==0){ //Click atrás
@@ -182,8 +183,8 @@ public class DisplayMessageActivity extends Activity {
     			if(onData.size()>=2 && (onData.get(0)[0].toString().equals(onData.get(1)[0].toString()))) comunidades = true;
     		} else {
     			String[] theData = new String[2];
-    			theData[0] = data.get(1)[clickedPosition].toString(); // url
-        		theData[1] = data.get(0)[clickedPosition].toString(); // name
+    			theData[0] = urls[clickedPosition].toString(); // url
+        		theData[1] = names[clickedPosition].toString(); // name
         		onData.add(theData);
     		}
     	}
@@ -211,9 +212,9 @@ public class DisplayMessageActivity extends Activity {
 		String[] cookie_keys = cookies.keySet().toArray(new String[0]);
 
 		// add to oBJECT
-		passData.add(dataCopy.get(0));
-		passData.add(dataCopy.get(1));
-		passData.add(dataCopy.get(2));
+		passData.add(names);
+		passData.add(urls);
+		passData.add(types);
 		passData.add(mydata);
 		passData.add(cookie_keys);
 		passData.add(cookie_values);
@@ -259,10 +260,22 @@ public class DisplayMessageActivity extends Activity {
 	            passData.remove(3);
 	            passData.remove(3);
 	            
-	        	// passData = data
-	            for (Object[] objects: passData) data.add((String[])objects.clone());
-	            // passData = dataCopy
-	            for (Object[] objects: passData) dataCopy.add((String[])objects.clone());
+	        	// names
+	            int length = passData.get(0).length;
+	            names =  new String[length];
+	            System.arraycopy(passData.get(0), 0, names, 0, length);
+	            passData.remove(0);
+	            
+	            // urls
+	            length = passData.get(0).length;
+	            urls =  new String[length];
+	            System.arraycopy(passData.get(0), 0, urls, 0, length);
+	            passData.remove(0);
+	            
+	            // types
+	            length = passData.get(0).length;
+	            types =  new String[length];
+	            System.arraycopy(passData.get(0), 0, types, 0, length);
 	            passData.clear();
 	            
 	            // Update de subtitle
@@ -273,7 +286,7 @@ public class DisplayMessageActivity extends Activity {
 	            
 	            // retrieve the same View before change orientation
 	            lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
-	            lstAdapter = new ListAdapter(this, dataCopy);
+	            lstAdapter = new ListAdapter(this, names, types);
 	            lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
 	
 	        } else {
@@ -311,17 +324,12 @@ public class DisplayMessageActivity extends Activity {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-		                
-		        data.add(asigsToArray(elements, true, comunidades)); // Añadimos el Array con los  nombres de Carpetas, Asignaturas y Archivos al ArrayList - [0]
-		        String s[] = urlsToArray(elements, true, comunidades);
-		        data.add(s); // Añadimos el Array con las  URLS al ArrayList - [1]
-		        int mysize = s.length;
-		        data.add(typeToArray(elements, true, comunidades, mysize)); // Añadimos el Array con los TYPES al ArrayList - [2]
+		        asigsToArray(elements, true, comunidades);
+		        urlsToArray(elements, true, comunidades);
+		        typeToArray(elements, true, comunidades, urls.length); // Añadimos el Array con los TYPES al ArrayList - [2]
 		        
-		        //Copia de FIRST que puede ser borrada
-		        copyListFirst();
 		        lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
-		        lstAdapter = new ListAdapter(this, dataCopy);
+		        lstAdapter = new ListAdapter(this, names, types);
 		        lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
 	        }    
 	        lstDocs.setOnItemClickListener(new OnItemClickListener() {
@@ -329,14 +337,14 @@ public class DisplayMessageActivity extends Activity {
 	            public void onItemClick(AdapterView<?> a, View v, int position, long id) { //Al clicar X item de la lista
 	            	isInternetPresent = cd.isConnectingToInternet();
 	            	if(isInternetPresent) {
-		            	if(!(data.get(2)[position].toString().equals("0")) && !(data.get(2)[position].toString().equals("1")) && !(data.get(2)[position].toString().equals("6"))) {
+		            	if(!(types[position].toString().equals("0")) && !(types[position].toString().equals("1")) && !(types[position].toString().equals("6"))) {
 		            		clickedPosition = position;
 		            		Log.d("TIPO", "DOCUMENTO");
 		            		// ProgressDialog (salta para mostrar el proceso del archivo descargándose)
 		            		dialog = new ProgressDialog(mycontext);
 		                    
 		            		// Servicio para la descarga del archivo
-		            		url = data.get(1)[clickedPosition].toString();
+		            		url = urls[clickedPosition].toString();
 		            		String url_back = onData.get(onData.size() - 2)[0];
 		            		new docDownload(url_back).execute();
 	
@@ -348,6 +356,7 @@ public class DisplayMessageActivity extends Activity {
 			                }
 			            	//Cuando se hace click en una opción de la lista, queremos borrar todo mientras carga, incluído el título header
 			            	headerTitle.setText(null);
+			            	//Copia de FIRST que puede ser borrada
 			            	lstAdapter.clearData();
 			            	// Refrescamos View
 			            	lstAdapter.notifyDataSetChanged();
@@ -355,7 +364,7 @@ public class DisplayMessageActivity extends Activity {
 			            	clickedPosition = position;
 			            	Log.d("URL", onData.get(onData.size() - 1)[0]);
 			            	
-			            	url = data.get(1)[clickedPosition].toString();
+			            	url = urls[clickedPosition].toString();
 			            	new urlConnect().execute();
 		            	}
 		            } else {
@@ -411,29 +420,20 @@ public class DisplayMessageActivity extends Activity {
 		Log.d("Doc", onData.get(onData.size() - 1)[0]);
 		Log.d("Doc", "/dotlrn/?page_num="+panel);
 		Log.d("Doc", String.valueOf(isHome));
-        data.remove(0);
-        data.remove(0);
-        data.remove(0);
-		data.add(asigsToArray(elements, isHome, comunidades)); //Array con los  nombres de Carpetas, Asignaturas y Archivos
-		String s[] = urlsToArray(elements, isHome, comunidades);
-		data.add(s);
-		int mysize =  s.length;
-		data.add(typeToArray(elements, isHome, comunidades, mysize));
-		
-		//Copia de FIRST que puede ser borrada
-		copyListFirst();
+
+		asigsToArray(elements, isHome, comunidades); //Array con los  nombres de Carpetas, Asignaturas y Archivos
+		urlsToArray(elements, isHome, comunidades);
+		typeToArray(elements, isHome, comunidades, urls.length);
         
         // Re-iniciamos adaptador de lista
-        lstAdapter = new ListAdapter(this, dataCopy);
+        lstAdapter = new ListAdapter(this, names, types);
         lstDocs.setDividerHeight(1);
-        lstDocs.setAdapter(lstAdapter);	
+        lstDocs.setAdapter(lstAdapter);
 	}
 	
 	public void afterBroadcaster2() {
-		//Copia de FIRST que puede ser borrada
-		copyListFirst();
 		lstDocs = (ListView)findViewById(R.id.LstDocs); // Declaramos la lista
-        lstAdapter = new ListAdapter(this, dataCopy);
+		lstAdapter = new ListAdapter(this, names, types);
         lstDocs.setAdapter(lstAdapter); // Declaramos nuestra propia clase adaptador como adaptador
 	}
 	
@@ -549,106 +549,100 @@ public class DisplayMessageActivity extends Activity {
 		return elem;
 	}
 	
-	public String [] asigsToArray(Elements melem, Boolean isHome, Boolean comun) throws IndexOutOfBoundsException {
+	public void asigsToArray(Elements melem, Boolean isHome, Boolean comun) throws IndexOutOfBoundsException {
 		int i = 1;
-		String s[];
 		Elements elem;
 		if(isHome) {
 			elem = melem.select("td[headers=contents_name] a, td[headers=folders_name] a").not("[href*=/clubs/]"); //Nombre Asignaturas String !"Comunuidades"
-			s = new String[(elem.size())+1]; //todo-comunidades + 1(carpeta comunidades)
-			s[0] = "Comunidades y otros";
+			names = new String[(elem.size())+1]; //todo-comunidades + 1(carpeta comunidades)
+			names[0] = "Comunidades y otros";
 			for(Element el : elem){
-			    s[i] = el.text();
+			    names[i] = el.text();
 			    i++;
 			}
 		} else if(comun) {
 			elem = melem.select("td[headers=contents_name] a[href*=/clubs/], td[headers=folders_name] a[href*=/clubs/]"); //Nombre Asignaturas String "Comunuidades"
-			s = new String[elem.size()+1]; //comunidades + 1(atrás)
-			s[0] = "Atrás " + onData.get(onData.size() - 2)[1];
+			names = new String[elem.size()+1]; //comunidades + 1(atrás)
+			names[0] = "Atrás " + onData.get(onData.size() - 2)[1];
 			for(Element el : elem){
-			    s[i] = el.text();
+			    names[i] = el.text();
 			    i++;
 			}
 		} else {
 			elem = melem.select("td[headers=contents_name] a[href], td[headers=folders_name] a[href]"); //Nombre Asignaturas String 
-			s = new String[elem.size()+1]; //todo + 1 (atrás)
-			s[0] = "Atrás " + onData.get(onData.size() - 2)[1];
+			names = new String[elem.size()+1]; //todo + 1 (atrás)
+			names[0] = "Atrás " + onData.get(onData.size() - 2)[1];
 			for(Element el : elem){
-			    s[i] = el.text();
+			    names[i] = el.text();
 			    i++;
 			}
 		}
 		Log.d("asigseToArray", String.valueOf(elem.size()));
-		return s;
 	}
 	
-	public String [] urlsToArray(Elements melem, Boolean isHome, Boolean comun) {
+	public void urlsToArray(Elements melem, Boolean isHome, Boolean comun) {
 		Elements elem;
 		int i = 1;
-		String s[];
 		if(isHome) {
 			elem = melem.select("td[headers=contents_name] a, td[headers=folders_name] a").not("[href*=/clubs/]"); //Nombre Asignaturas String !"Comunuidades"
-			s = new String[(elem.size())+1];
-			s[0] = "/dotlrn/?page_num="+panel;
+			urls = new String[(elem.size())+1];
+			urls[0] = "/dotlrn/?page_num="+panel;
 			for(Element el : elem){
-			    s[i] = el.select("a").attr("href");
+			    urls[i] = el.select("a").attr("href");
 			    i++;
 			}
 		} else if(comun) {
 			elem = melem.select("td[headers=contents_name] a[href*=/clubs/], td[headers=folders_name] a[href*=/clubs/]"); //Nombre Asignaturas String "Comunuidades"
-			s = new String[elem.size()+1];
-			s[0] = onData.get(onData.size() - 2)[0];
+			urls = new String[elem.size()+1];
+			urls[0] = onData.get(onData.size() - 2)[0];
 			for(Element el : elem){
-			    s[i] = el.select("a").attr("href");
+			    urls[i] = el.select("a").attr("href");
 			    i++;
 			}
 		} else {
 			elem = melem.select("td[headers=contents_name] a[href], td[headers=folders_name] a[href]"); //Nombre Asignaturas String 
-			s = new String[elem.size()+1];
-			s[0] = onData.get(onData.size() - 2)[0];
+			urls = new String[elem.size()+1];
+			urls[0] = onData.get(onData.size() - 2)[0];
 			for(Element el : elem){
-			    s[i] = el.select("a").attr("href");
+			    urls[i] = el.select("a").attr("href");
 			    i++;
 			}
 		}
-		Log.d("urlsToArray", String.valueOf(s.length));
-		return s;
+		Log.d("urlsToArray", String.valueOf(urls.length));
 	}
 	
-	public String [] typeToArray(Elements melem, Boolean isHome, Boolean comun, int size) {
+	public void typeToArray(Elements melem, Boolean isHome, Boolean comun, int size) {
 		Elements elem = melem.select("td[headers=folders_type], td[headers=contents_type]"); //Nombre Asignaturas String
 		String[] mtypes = {"carpeta", "Carpeta", "PDF", "Microsoft Excel", "Microsoft PowerPoint", "Microsoft Word"};
-		String s[];
 		int i = 1;
 		if(isHome) {
-			s = new String[size];
-			s[0] = "6";	
+			types = new String[size];
+			types[0] = "6";	
 			while(i<size) {
-				s[i] = "1";
+				types[i] = "1";
 				i++;
 			}
 		} else if(comun) {
-			s = new String[size];
-			s[0] = "0";
+			types = new String[size];
+			types[0] = "0";
 			while(i<size) {
-				s[i] = "6";
+				types[i] = "6";
 				i++;
 			}
 		} else {
-			s = new String[elem.size()+1];
-			s[0] = "0";
+			types = new String[elem.size()+1];
+			types[0] = "0";
 			for(Element el : elem){
-				String types = el.text().trim();
-				s[i] = "7"; // Defecto al menos que...:
-				if(mtypes[0].equals(types.toString()) || mtypes[1].equals(types.toString())) s[i] = "1"; // 1 = Carpeta
-				if(mtypes[2].equals(types.toString())) s[i] = "2"; // 2 = PDF 
-				if(mtypes[3].equals(types.toString())) s[i] = "3"; // 3 = Excel
-				if(mtypes[4].equals(types.toString())) s[i] = "4"; // 4 = Power Point
-				if(mtypes[5].equals(types.toString())) s[i] = "5"; // 5 = Word
+				String the_types = el.text().trim();
+				types[i] = "7"; // Defecto al menos que...:
+				if(mtypes[0].equals(the_types.toString()) || mtypes[1].equals(the_types.toString())) types[i] = "1"; // 1 = Carpeta
+				if(mtypes[2].equals(the_types.toString())) types[i] = "2"; // 2 = PDF 
+				if(mtypes[3].equals(the_types.toString())) types[i] = "3"; // 3 = Excel
+				if(mtypes[4].equals(the_types.toString())) types[i] = "4"; // 4 = Power Point
+				if(mtypes[5].equals(the_types.toString())) types[i] = "5"; // 5 = Word
 				i++;
 			}
 		}
-		return s;
 	}
 	
 	/* TASKS */
@@ -1041,13 +1035,6 @@ public class DisplayMessageActivity extends Activity {
 	    return id;
 
     }	
-    
-    public void copyListFirst() {
-		//Copia de FIRST que puede ser borrada
-        for (String[] string: data) {
-        dataCopy.add((String[])string.clone());
-        }
-    }
 	
     /**
      * Pasa cookies en formato String {cookies} a Map que es el formato utilizado poara insertar cookies por JSoup

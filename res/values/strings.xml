@@ -44,5 +44,6 @@
     <string name="title_activity_file_manager">FileManager</string>
     <string name="title_activity_tabs">TabsActivity</string>
     <string name="title_activity_file_manager2">FileManager2</string>
+    <string name="title_activity_task_manager">TaskManager</string>
 
 </resources>

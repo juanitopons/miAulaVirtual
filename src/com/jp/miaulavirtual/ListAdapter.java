@@ -41,17 +41,22 @@ import android.widget.TextView;
 class ListAdapter extends BaseAdapter {
     
     Activity context;
-    ArrayList<String[]> data; // 0 = names 1 = urls 2 = types
+    String[] names;
+    String[] types;
 
-    public ListAdapter(Activity context,  ArrayList<String[]> data) {
+    public ListAdapter(Activity context,  String[] names, String[] types) {
     	 super();
          this.context = context;
-         this.data = data;
+         this.names = new String[names.length];
+         System.arraycopy(names, 0, this.names, 0, names.length);
+         this.types = new String[types.length];
+         System.arraycopy(types, 0, this.types, 0, types.length);
+        
     }
      
     public int getCount() {
-    	if(data.isEmpty()) return 1;
-        return data.get(0).length;
+    	if(names==null) return 1;
+        return names.length;
     }
     
     public Object getItem(int position) {
@@ -64,7 +69,8 @@ class ListAdapter extends BaseAdapter {
     
     public void clearData() {
         // clear the data
-        data.clear();
+        names = null;
+        types = null;
     }
     
 	private void setRestrictedOrientation() {
@@ -83,7 +89,7 @@ class ListAdapter extends BaseAdapter {
     
 	public View getView(int position, View convertView, ViewGroup parent) {
     	View item;
-    	if(!data.isEmpty()) {
+    	if(names!=null) {
     	LayoutInflater inflater = context.getLayoutInflater();
     	
         item = inflater.inflate(R.layout.list_docs, null);
@@ -99,57 +105,57 @@ class ListAdapter extends BaseAdapter {
 	    
 	    // Image
 	    image = (ImageView)item.findViewById(R.id.folderImage);
-	    switch(Integer.parseInt(data.get(2)[position].toString())) {
+	    switch(Integer.parseInt(types[position].toString())) {
 	    case 0: // Back button
-	    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)", "" );
+	    	rgxTitle = names[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)", "" );
 	    	title.setText(rgxTitle.trim());
 	    	ico = context.getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_back", null, null); // Back ico
 	    	image.setImageResource(ico);
 	    	break;
 	    case 1: // Folder
-	    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)", "" );
+	    	rgxTitle = names[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)", "" );
 	    	title.setText(rgxTitle.trim());
 	    	ico = context.getResources().getIdentifier("com.jp.miaulavirtual:drawable/icon_folder", null, null); // Folder ico
 	    	image.setImageResource(ico);
 	    	break;
 	    case 2: // PDF
-	    	rgxTitle = data.get(0)[position].toString();
+	    	rgxTitle = names[position].toString();
 	    	title.setText(rgxTitle.trim());
 	    	ico = context.getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_pdf", null, null); // PDF ico
 	    	image.setImageResource(ico);
 	    	break;	    	
 	    case 3: // Excel
-	    	rgxTitle = data.get(0)[position].toString();
+	    	rgxTitle = names[position].toString();
 	    	title.setText(rgxTitle.trim());
 	    	ico = context.getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_excel", null, null); // Excel ico
 	    	image.setImageResource(ico);
 	    	break;
 	    case 4: // Power Point
-	    	rgxTitle = data.get(0)[position].toString();
+	    	rgxTitle = names[position].toString();
 	    	title.setText(rgxTitle.trim());
 	    	ico = context.getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_ppt", null, null); // PPT ico
 	    	image.setImageResource(ico);
 	    	break;
 	    case 5: // Word
-	    	rgxTitle = data.get(0)[position].toString();
+	    	rgxTitle = names[position].toString();
 	    	title.setText(rgxTitle.trim());
 	    	ico = context.getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_word", null, null); // Word ico
 	    	image.setImageResource(ico);
 	    	break;
 	    case 6: // Communities and others
-	    	rgxTitle = data.get(0)[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)", "" );
+	    	rgxTitle = names[position].toString().replaceAll( "\\d{4}-\\d{4}\\s|\\d{4}-\\d{2}\\s|Documentos\\sde\\s?|Gr\\..+?\\s|\\(.+?\\)", "" );
 	    	title.setText(rgxTitle.trim());
 	    	ico = context.getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_comu", null, null); // Word ico
 	    	image.setImageResource(ico);
 	    	break;
 	    default: // Default
-	    	rgxTitle = data.get(0)[position].toString();
+	    	rgxTitle = names[position].toString();
 	    	title.setText(rgxTitle);
 	    	ico = context.getResources().getIdentifier("com.jp.miaulavirtual:drawable/ic_def", null, null); // Other ico
 	    	image.setImageResource(ico);
 	    	break;
 	    }
-	    if(!prefs.getBoolean("pattern", true)) title.setText(data.get(0)[position].toString());
+	    if(!prefs.getBoolean("pattern", true)) title.setText(names[position].toString());
         
         /*
          * Trick: When we clear the List (because user click any subject) we change the item count to 1 and we load the loading page (load_list) with restricted orientation.

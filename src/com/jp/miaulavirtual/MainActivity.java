@@ -42,10 +42,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.util.Log;
@@ -75,39 +73,27 @@ public class MainActivity extends Activity {
 	
 	private Map<String, String> cookies;
 	
-	// Receiver
-	public final static String RESPONSE = "com.jp.miaulavirtual.RESPONSE";
-	public final static String LOGGED = "com.jp.miaulavirtual.LOGGED";
-	private DataUpdateReceiver dataUpdateReceiver;
+	public void process() {
+		finish();
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+	}
 	
-	//BroadcastReceiver, recibe variables de nuestro servicio posteriormente ejecutado CurlService
-	private class DataUpdateReceiver extends BroadcastReceiver {
-	    @Override
-	    public void onReceive(Context context, Intent intent) {
-	        if (intent.getAction().equals(MainActivity.LOGGED)) {
-	        	boolean logged = intent.getBooleanExtra("logged", true);
-	        	if(!logged) {
-	        		int id =  intent.getIntExtra("id", 2);
-            		switch(id) {
-            		case 0: 
-    	        		setContentView(R.layout.activity_main); 
-    	        		Toast.makeText(getBaseContext(),getString(R.string.bad_data), Toast.LENGTH_SHORT).show();
-			            break;
-            		case 1:
-            			Toast.makeText(getBaseContext(),getString(R.string.toast_6), Toast.LENGTH_LONG).show();
-            			setContentView(R.layout.activity_main);
-            			break;
-            		default:
-            			Toast.makeText(getBaseContext(),getString(R.string.toast_5), Toast.LENGTH_LONG).show();
-            			setContentView(R.layout.activity_main);
-            			break;
-            		}
-	        	} else {
-	        		finish();
-	        	}
-	        	setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-	        }
-	    }
+	public void process(int id) {
+		switch(id) {
+		case 0: 
+    		setContentView(R.layout.activity_main); 
+    		Toast.makeText(getBaseContext(),getString(R.string.bad_data), Toast.LENGTH_SHORT).show();
+            break;
+		case 1:
+			Toast.makeText(getBaseContext(),getString(R.string.toast_6), Toast.LENGTH_LONG).show();
+			setContentView(R.layout.activity_main);
+			break;
+		default:
+			Toast.makeText(getBaseContext(),getString(R.string.toast_5), Toast.LENGTH_LONG).show();
+			setContentView(R.layout.activity_main);
+			break;
+		}
+    	setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 	}
 	
     @Override
@@ -161,20 +147,10 @@ public class MainActivity extends Activity {
             	setContentView(R.layout.activity_main);
             	Toast.makeText(getBaseContext(),getString(R.string.no_internet), Toast.LENGTH_LONG).show();
             }
-
-        	/** String [] user_data;
-        	user_data = new String[2];
-        	user_data[0] = user;
-        	user_data[1] = pass;
-        	
-        	intent.putExtra(USER_DATA, user_data); //message = qué mostrar en la nueva actividad al pulsar el boton de "Login" **/
         } else {
         setContentView(R.layout.activity_main); //Content si no está logueado
         }
         Log.d(tag, "In the onCreate() event");
-        if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
-        IntentFilter intentFilter = new IntentFilter(MainActivity.LOGGED);
-        registerReceiver(dataUpdateReceiver, intentFilter);
     }
 
     @Override
@@ -236,7 +212,6 @@ public class MainActivity extends Activity {
     {
         super.onDestroy();
         Log.d(tag, "In the onDestroy() event");
-        if(dataUpdateReceiver!=null) unregisterReceiver(dataUpdateReceiver);
     }
     
     /** Llamada cuando el usuario hace clic en 'Enviar' */
@@ -285,10 +260,6 @@ public class MainActivity extends Activity {
 	        
 	        // Iniciamos el servicio de Scrap
 	        new urlConnect().execute();
-	        
-	        if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
-	        IntentFilter intentFilter = new IntentFilter(MainActivity.LOGGED);
-	        registerReceiver(dataUpdateReceiver, intentFilter);
     	} else {
     		Toast.makeText(getBaseContext(),getString(R.string.no_internet), Toast.LENGTH_LONG).show();
     	}
@@ -296,7 +267,7 @@ public class MainActivity extends Activity {
 
     /* TASKS OR SERVICES */
     
-    private class urlConnect extends AsyncTask<Void, Integer, Response> {
+    private class urlConnect extends AsyncTask<Void, Void, Response> {
     	
     	int a;
     	protected Response doInBackground(Void... params) {
@@ -313,43 +284,25 @@ public class MainActivity extends Activity {
             	}
             return res;
         }
-
-        protected void onProgressUpdate(Integer... progress) {
-        }
-
         protected void onPostExecute(Response response) {
             if(res != null) {
 	        	if(res.hasCookie("ad_user_login")) { // El usuario y la contrase�a son correctas
-		            	Intent bcIntent = new Intent();
-		                bcIntent.setAction(LOGGED);
-		                bcIntent.putExtra("logged", true);
-		                sendBroadcast(bcIntent);
-		            	startOk(response, mycontext);
+		             startOk(response, mycontext);
+		             process();
 	            } else if(res.hasCookie("ad_session_id")) { // Usuario y contrase�a incorrectos. No tiene ni "ad_user_login" ni "fs_block_id"
 	            	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mycontext);
 	            	Editor editor = prefs.edit();
-		            	editor.remove("cookies");
-		                editor.commit();
-		            	Intent bcIntent = new Intent();
-			            bcIntent.setAction(LOGGED);
-			            bcIntent.putExtra("logged", false);
-			            bcIntent.putExtra("id", 0);
-			            sendBroadcast(bcIntent);
+		            editor.remove("cookies");
+		            editor.commit();
+			        process(0);
 	        	} else {
-	        		startOk3(mycontext, 6, false);
+	        		process(6);
 	        	}
 	        } else if(a==1) {
-	        	Intent bcIntent = new Intent();
-                bcIntent.setAction(LOGGED);
-                bcIntent.putExtra("logged", true);
-                sendBroadcast(bcIntent);
-            	startOk2(mycontext, 9, false);
+            	startOk2(mycontext, false);
+            	process();
 	        } else {
-        		Intent bcIntent = new Intent();
-	            bcIntent.setAction(LOGGED);
-	            bcIntent.putExtra("logged", false);
-	            bcIntent.putExtra("id", 1);
-	            sendBroadcast(bcIntent);
+	            process(1);
 	        }
         }
     }
@@ -378,21 +331,13 @@ public class MainActivity extends Activity {
     	  startActivity(i);
     	}
     
-    private void startOk2(Context context, int id, Boolean status) {
+    private void startOk2(Context context, Boolean status) {
     	Intent i = new Intent(this, TabsActivity.class);
     	i.putExtra("user", user);
   	  	i.putExtra("pass", pass);
-  	  	Log.d("Here i am", "Hi there!");
   	  	i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
   	  	startActivity(i);
     	}
-    
-    private void startOk3(Context context, int id, Boolean status) {
-    	Intent bcIntent = new Intent();
-        bcIntent.setAction(RESPONSE);
-        bcIntent.putExtra("id", id);
-        sendBroadcast(bcIntent);
-    }
     
     // CONEXIÓN
     
@@ -414,7 +359,5 @@ public class MainActivity extends Activity {
         editor.putString("cookies", cookies.toString());
         editor.commit();
         Log.d("Connect", "Conectando sin cookies");
-
-    }
-    
+    } 
 }
