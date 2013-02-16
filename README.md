@@ -13,9 +13,9 @@ It is a standard version of miAulaVirtual, whose development and adaptation shou
 Developed with usage of: Java, XML, Android, JSoup's licensed library and other licensed Java libraries.
 
 ## Current version ##
-Version not yet fully functional
+1.0.1
 
-Android version compatibility: 2.0 and onward
+Android version compatibility: 2.3 and onward
 
 ## Features ##
 + University of Valencia <b>persistent</b> login
@@ -46,7 +46,12 @@ Android version compatibility: 2.0 and onward
 + Add 'cancel' button while downloading - <b><i>DONE</i></b>
 
 ## Change Log ##
-None yet
+<b>1.0.1</b>
+16-February-2013
++ Fixed some not very significant bugs
+<b>1.0</b>
+14-February-2013
++ Initial version
 
 ## Known issues ##
 + <b>SOLVED: <i>Buffered download</i></b> - Memory allocation problem in downloading large files

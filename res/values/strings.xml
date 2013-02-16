@@ -21,7 +21,12 @@
 
     <!-- - SETTINGS -->
     <string name="menu_settings">Preferencias</string>
+    <string name="acerca_de">Acerca de</string>
     <string name="cerrar_sesion">Cerrar Sesión</string>
+    
+    <!-- - ABOUT -->
+     <string name="linkedin">Linkedin</string>
+     <string name="email">Email Desarollador</string>
 
     <!-- - ACTIVITY -->
     <string name="newapi">NewApi</string>
@@ -45,5 +50,7 @@
     <string name="title_activity_tabs">TabsActivity</string>
     <string name="title_activity_file_manager2">FileManager2</string>
     <string name="title_activity_task_manager">TaskManager</string>
+    <string name="title_activity_activity_about">ActivityAbout</string>
+    <string name="title_activity_about">AboutActivity</string>
 
 </resources>

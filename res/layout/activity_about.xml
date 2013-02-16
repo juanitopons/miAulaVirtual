@@ -1,0 +1,70 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_centerHorizontal="true"
+    android:orientation="vertical" >
+
+     <TableLayout
+        android:layout_width="match_parent"
+   	 	android:layout_height="wrap_content" >   
+    <TextView android:id="@+id/acercade"
+    	android:layout_width="fill_parent"
+    	android:layout_height="wrap_content"
+    	android:background="#E0DCD3"
+    	android:textStyle="normal"
+    	android:textColor="#3d3d3d"
+    	android:gravity="center"
+    	android:layout_marginTop="22dp"
+    	android:paddingTop="18dp"
+    	android:paddingBottom="18dp"
+    	android:paddingRight="18dp"
+    	android:paddingLeft="18dp"
+    	android:textSize="16sp" />
+    
+    </TableLayout>
+
+     <LinearLayout
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_gravity="center_horizontal"
+         android:layout_marginTop="18dp"
+         android:paddingLeft="16dp"
+         android:paddingRight="16dp" >
+
+	  	<Button
+			android:id="@+id/help_email_bt"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:layout_weight="1"
+			android:text="@string/email"
+			android:onClick="action" />
+		<Button
+			android:id="@+id/help_website_bt"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:layout_weight="1"
+			android:text="@string/linkedin"
+			android:onClick="action" />	
+  	</LinearLayout>
+  	    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="bottom"
+        android:gravity="bottom"
+        android:orientation="vertical" >
+				<TextView
+				    android:layout_height="30dp"
+				    android:layout_width="fill_parent"
+				    android:layout_gravity="bottom"
+				    android:gravity="center_vertical|center_horizontal"
+				    android:text="@string/footer"
+				    android:background="#333333"
+				    android:textSize="10sp"
+				    android:textColor="#5a5a5a"
+				    android:textScaleX="1" />
+
+    </TableLayout>
+</LinearLayout>

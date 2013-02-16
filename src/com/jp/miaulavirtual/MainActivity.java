@@ -170,8 +170,11 @@ public class MainActivity extends Activity {
         */
         switch(item.getItemId()){
         case R.id.preferencias: //Nombre del id del men�, para combrobar que se ha pulsado
-        	Log.d(tag, "Preferencias");
         	startActivity(new Intent(this, SettingsActivity.class));;
+        	break;
+        case R.id.acercade: //Nombre del id del men�, para combrobar que se ha pulsado
+        	startActivity(new Intent(this, AboutActivity.class));
+        	break;
         }
         return true;
     }
