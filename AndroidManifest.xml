@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.jp.miaulavirtual"
-    android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionCode="4"
+    android:versionName="2.0" >
 
     <uses-sdk
         android:minSdkVersion="9"
@@ -43,7 +43,8 @@
         </activity>
         <activity
             android:name="com.jp.miaulavirtual.SettingsActivity"
-            android:label="@string/menu_settings" >
+            android:label="@string/menu_settings"
+            android:launchMode="singleTop" >
         </activity>
         <activity
             android:name="com.jp.miaulavirtual.FileManager"
@@ -64,11 +65,17 @@
         </activity>
         <activity
             android:name="com.jp.miaulavirtual.TaskManager"
-            android:label="@string/title_activity_task_manager" >
+            android:label="@string/title_activity_task_manager"
+            android:launchMode="singleTop"
+            android:parentActivityName="com.jp.miaulavirtual.TabsActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.jp.miaulavirtual.TabsActivity" />
         </activity>
         <activity
             android:name="com.jp.miaulavirtual.AboutActivity"
-            android:label="@string/title_activity_about" >
+            android:label="@string/title_activity_about"
+            android:launchMode="singleTop" >
         </activity>
     </application>
 

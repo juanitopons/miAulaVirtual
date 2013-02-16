@@ -46,11 +46,9 @@
     <!-- - FOOTER -->
     <string name="footer">Copyright 2013 Juan Pons - GNU GPL v3.0 | @juanitopons</string>
     <string name="hello_world">Hello world!</string>
-    <string name="title_activity_file_manager">FileManager</string>
+    <string name="title_activity_file_manager">Gestor archivos</string>
     <string name="title_activity_tabs">TabsActivity</string>
-    <string name="title_activity_file_manager2">FileManager2</string>
-    <string name="title_activity_task_manager">TaskManager</string>
-    <string name="title_activity_activity_about">ActivityAbout</string>
-    <string name="title_activity_about">AboutActivity</string>
+    <string name="title_activity_task_manager">Tareas</string>
+    <string name="title_activity_about">Acerca de</string>
 
 </resources>

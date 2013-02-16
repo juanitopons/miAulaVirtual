@@ -408,7 +408,7 @@ public class DisplayMessageActivity extends Activity {
 
         }
 		try {
-        	if(isHome || comunidades) {
+        	if(isHome) {
         		elements = scrap2(doc);
         	} else {
         		elements = scrap(doc);
@@ -547,7 +547,7 @@ public class DisplayMessageActivity extends Activity {
 	}
     
     public Elements scrap2(Document mdoc) throws IOException {
-		Elements elem = mdoc.select("table[summary=Data for folders] tbody tr[class=odd], table[summary=Data for folders] tbody tr[class=even], table[summary=Data for folders] tbody tr[class=even last], table[summary=Data for folders] tbody tr[class=odd last], table[summary=Dades per a folders] tbody tr[class=odd], table[summary=Dades per a folders] tbody tr[class=even], table[summary=Dades per a folders] tbody tr[class=even last], table[summary=Dades per a folders] tbody tr[class=odd last], table[summary=Datos para folders] tbody tr[class=odd], table[summary=Datos para folders] tbody tr[class=even], table[summary=Datos para folders] tbody tr[class=even last], table[summary=Datos para folders] tbody tr[class=odd last]"); //Filas de Documentos
+		Elements elem = mdoc.select("table[summary] tbody tr[class=odd], table[summary] tbody tr[class=even], table[summary] tbody tr[class=even last], table[summary] tbody tr[class=odd last]"); //Filas de Documentos
 	    Log.d("Service", "Passing elements variable2");
 		return elem;
 	}
