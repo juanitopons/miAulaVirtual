@@ -1041,8 +1041,8 @@ public class DisplayMessageActivity extends Activity {
 	
     /**
      * Pasa cookies en formato String {cookies} a Map que es el formato utilizado poara insertar cookies por JSoup
-     * @param scookie
-     * @return Map<String, String>
+     * @param scookie la cookie que queremos pasar a Map
+     * @return Map<String, String> cookie
      */
 	public Map<String, String> toMap(String scookie) {
 		Map<String, String> cookies = new LinkedHashMap<String, String>();

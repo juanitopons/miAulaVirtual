@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+	<string-array name="dialog_array">
+	  <item>@string/a_1</item>
+	  <item>@string/a_2</item>
+	  <item>@string/a_3</item>
+	</string-array>
+</resources>

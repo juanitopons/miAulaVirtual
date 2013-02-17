@@ -25,10 +25,13 @@ Android version compatibility: 2.3 and onward
 + Subjec regex pattern clean and replace (available desactivation through 'Preferences')
 + Open document after donwload
 + Compatibility with all virtual classroom themes and personalizations
++ Documents organized by subject
++ Documents manager
 
 ## To do ##
 + Add image type
 + Let students select period days of task lists
++ Let student say if they want or not to open the file when it's downloaded
 + Remove keyboard just after sending the login
 + Clean code
 + Preference option for filtering empty folders
@@ -60,7 +63,7 @@ Android version compatibility: 2.3 and onward
 ## Upcoming features ##
 + Organize archive in subjects' folders <b><i>DONE</i></b>
 + Switch between years
-+ Archive management
++ Archive management <b><i>DONE</i></b>
 + Task management (Sync Students tasks with Google Tasks)
 + Cool calendar (?)
 + Webmail integration (?)

@@ -16,9 +16,9 @@ import android.widget.TextView;
 
 class ListManagerAdapter extends BaseAdapter {
     
-	Boolean isHomePath;
-    Activity context;
-    File[] data; // 0 = names 1 = urls 2 = types
+	private Boolean isHomePath;
+    private Activity context;
+    private File[] data; // 0 = names 1 = urls 2 = types
 
     public ListManagerAdapter(Activity context,  File[] data, Boolean isHome) {
     	 super();
@@ -32,7 +32,24 @@ class ListManagerAdapter extends BaseAdapter {
 	         System.arraycopy(data, 0, this.data, 0, data.length); 
          }
     }
-     
+    
+    public void setData(File[] data) {
+        if(!isHomePath) {
+        	 this.data = null;
+	         this.data = new File[data.length+1];
+	         System.arraycopy(data, 0, this.data, 1, data.length);
+        } else {
+	         this.data = data;
+        }
+    }
+    
+    public void setIsHomePath(Boolean isHomePath) {
+    	this.isHomePath = isHomePath;
+    }
+    
+    public void clear() {
+    	this.data = null;
+    }
     public int getCount() {
     	if(data==null) return 1;
         return data.length;
@@ -44,11 +61,6 @@ class ListManagerAdapter extends BaseAdapter {
     
     public long getItemId(int position) {
         return position;
-    }
-    
-    public void clearData() {
-        // clear the data
-        data = null;
     }
     
 	private void setRestrictedOrientation() {
@@ -66,13 +78,13 @@ class ListManagerAdapter extends BaseAdapter {
 	}
     
 	public View getView(int position, View convertView, ViewGroup parent) {
-    	View item;
-    	if(data!=null) {
-	    	LayoutInflater inflater = context.getLayoutInflater();
+	    View item;
+	    LayoutInflater inflater = context.getLayoutInflater();
 	    	
-	        item = inflater.inflate(R.layout.list_docs, null);
-	        item.setMinimumHeight(65);  
-	        item.setPadding(14, 0, 6, 0);
+	    item = inflater.inflate(R.layout.list_docs, null);
+	    item.setMinimumHeight(65);  
+	    item.setPadding(14, 0, 6, 0);
+	        if(data!=null) {
 	        TextView title;
 	        ImageView image;
 	        int ico;
@@ -81,8 +93,6 @@ class ListManagerAdapter extends BaseAdapter {
 		    String rgxTitle;
 		    // Image
 		    image = (ImageView)item.findViewById(R.id.folderImage);
-		    
-
 		    
 		    if(isHomePath) {
 		    	rgxTitle = data[position].getName();
@@ -113,19 +123,9 @@ class ListManagerAdapter extends BaseAdapter {
 			    	ico = context.getResources().getIdentifier("com.jp.miaulavirtual:drawable/"+setIco(extension), null, null); // Back ico
 			    	image.setImageResource(ico);
 			    }
-		    }
-        
-        /*
-         * Trick: When we clear the List (because user click any subject) we change the item count to 1 and we load the loading page (load_list) with restricted orientation.
-         */
-    	} else { 			
-    		setRestrictedOrientation();
-    
-    		LayoutInflater inflater = context.getLayoutInflater();
-    	    item = inflater.inflate(R.layout.load_list, null);
-    	    item.setMinimumHeight(35);
+		    }   
     	}
-        return(item);
+		return(item);
     }
 	
 	public String setIco(String ext) {
