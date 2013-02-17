@@ -30,6 +30,7 @@ public class FileManager extends Activity {
 	private File[] sdData;
 	private Activity mycontext;
 	private Boolean status = true;
+	private int i = 1;
 	
 	public Object onRetainNonConfigurationInstance() {
 		Object[] passData = new Object[2];
@@ -279,20 +280,6 @@ public class FileManager extends Activity {
 	    });
 	    return builder.create();
 	}
-	
-    public void onStart()
-    {
-        super.onStart();
-        Log.d("Lifecycle4", "In the onStart()");
-        
-    }
-    
-    public void onRestart()
-    {
-        super.onRestart();
-        Log.d("Lifecycle4", "In the onRestart()");
-
-    }
     
     public void onResume()
     {
@@ -300,48 +287,32 @@ public class FileManager extends Activity {
         Log.d("Lifecycle4", "In the onResume()");
         
         // re-construct listView
-        try {
-	        File parent = sdData[0].getParentFile();
-	        if(isHomePath) {
-	        	sdData = listFiles(parent, true);
-	        } else {
-	        	sdData = listFiles(parent, false);
+        if(i>1) {
+	        try {
+		        File parent = sdData[0].getParentFile();
+		        if(isHomePath) {
+		        	sdData = listFiles(parent, true);
+		        } else {
+		        	sdData = listFiles(parent, false);
+		        }
+		        if(sdData!= null && sdData.length==0) sdData = null;
+		        if(sdData!=null) {
+		        	if(lstDocs2==null) {
+		        		setData(true);
+		        		startListener();
+		        	} else {
+		        		setData();
+		        	}
+		        }
+	        } catch(NullPointerException e) {
+	        	status = true;
+	        	onCreate(null);
+	        } catch(ArrayIndexOutOfBoundsException e) {
+	        	status = true;
+	        	onCreate(null);
 	        }
-	        if(sdData!= null && sdData.length==0) sdData = null;
-	        if(sdData!=null) {
-	        	if(lstDocs2==null) {
-	        		setData(true);
-	        		startListener();
-	        	} else {
-	        		setData();
-	        	}
-	        }
-        } catch(NullPointerException e) {
-        	status = true;
-        	onCreate(null);
-        } catch(ArrayIndexOutOfBoundsException e) {
-        	status = true;
-        	onCreate(null);
+        } else {
+        	i++;
         }
-
-    }
-    
-    public void onPause()
-    {
-        super.onPause();
-        Log.d("Lifecycle4", "In the onPause()");
-    }
-    
-    public void onStop()
-    {
-        super.onStop();
-        Log.d("Lifecycle4", "In the onStop()");
-    }
-    
-    public void onDestroy()
-    {
-        super.onDestroy();
-        Log.d("Lifecycle4", "In the onDestroy()");
-
     }
 }
