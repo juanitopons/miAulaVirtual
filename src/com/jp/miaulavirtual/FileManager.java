@@ -29,6 +29,7 @@ public class FileManager extends Activity {
 	private Boolean isHomePath;
 	private File[] sdData;
 	private Activity mycontext;
+	private Boolean status = true;
 	
 	public Object onRetainNonConfigurationInstance() {
 		Object[] passData = new Object[2];
@@ -61,19 +62,28 @@ public class FileManager extends Activity {
 			// Get the onRetainNonConfigurationInstance()
 	        final Object[] passData = (Object[]) getLastNonConfigurationInstance();
 	        if(passData != null) { 
-	        	sdData = (File[]) passData[0];
-	        	isHomePath = (Boolean) passData[1];
-	        	
-	        	// our subtitle
-	    		setSubTitle();
-	        	// our listView
-	        	setData(true);
-		        startListener();
+		        	sdData = (File[]) passData[0];
+		        	isHomePath = (Boolean) passData[1];
+		        	if(sdData!= null && sdData.length==0) sdData = null;
+		        if(sdData!=null && status) {	
+		        	// our subtitle
+		    		setSubTitle();
+		        	// our listView
+		        	setData(true);
+			        startListener();
+	        	} else {
+	        		lstAdapter2 = null;
+			        lstDocs2 = null;
+	        		// None
+					TextView tv = (TextView) findViewById(R.id.manager_error);
+			        tv.setText(getString(R.string.handle_2));
+			        tv.setVisibility(0);
+	        	}
 	        } else {
 				File myDir = new File(homePath);
 				sdData = listFiles(myDir, true);
-				
-				if(sdData.length>0) {
+				if(sdData!= null && sdData.length==0) sdData = null;
+				if(sdData!=null && status) {
 					isHomePath = isHomePath(sdData[0].getParent());
 					
 					// our subtitle
@@ -84,7 +94,6 @@ public class FileManager extends Activity {
 				} else {
 					lstAdapter2 = null;
 			        lstDocs2 = null;
-			        
 					// None
 					TextView tv = (TextView) findViewById(R.id.manager_error);
 			        tv.setText(getString(R.string.handle_2));
@@ -227,7 +236,8 @@ public class FileManager extends Activity {
 	            	File parent = sdData[position-1].getParentFile();
 	            	sdData = listFiles(sdData[position-1].getParentFile(), false);
 	            	//...there are any file inside directory
-	            	if(sdData.length==0) {
+	            	if(sdData!= null && sdData.length==0) sdData = null;
+	            	if(sdData==null) {
 	            		File home = parent.getParentFile();
 	            		// directory deletion
 	            		parent.delete(); 
@@ -238,7 +248,8 @@ public class FileManager extends Activity {
 	            		isHomePath = isHomePath(parent.getAbsolutePath());
 	            	}
 	        		
-	            	if(sdData.length>0) {
+	            	if(sdData!= null && sdData.length==0) sdData = null;
+	            	if(sdData!=null) {
 		            	// our subtitle
 			    		setSubTitle();
 		        		// re-construct listView
@@ -248,6 +259,7 @@ public class FileManager extends Activity {
 	            		lstAdapter2.notifyDataSetChanged();
 				        lstAdapter2 = null;
 				        lstDocs2 = null;
+				        status = false;
 
 				        // None
 						TextView tv = (TextView) findViewById(R.id.manager_error);
@@ -295,7 +307,8 @@ public class FileManager extends Activity {
 	        } else {
 	        	sdData = listFiles(parent, false);
 	        }
-	        if(sdData.length>0) {
+	        if(sdData!= null && sdData.length==0) sdData = null;
+	        if(sdData!=null) {
 	        	if(lstDocs2==null) {
 	        		setData(true);
 	        		startListener();
@@ -304,8 +317,10 @@ public class FileManager extends Activity {
 	        	}
 	        }
         } catch(NullPointerException e) {
+        	status = true;
         	onCreate(null);
         } catch(ArrayIndexOutOfBoundsException e) {
+        	status = true;
         	onCreate(null);
         }
 
