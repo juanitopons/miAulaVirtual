@@ -2,7 +2,10 @@ package com.jp.miaulavirtual;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,7 +16,9 @@ import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Path;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
@@ -203,7 +208,7 @@ public class FileManager extends Activity {
 			                Log.d("Type", extension);
 			                
 			                // the Dialog
-			                AlertDialog dialog = (AlertDialog) createDialog(position, doc_type);
+			                AlertDialog dialog = (AlertDialog) createDialog(position, doc_type, extension);
 			                dialog.show();     
 		            	}
 	            	}
@@ -212,11 +217,11 @@ public class FileManager extends Activity {
         });
 	}
 	
-	public Dialog createDialog(final int position, final String doc_type) {
+	public Dialog createDialog(final int position, final String doc_type, final String ext) {
 	    AlertDialog.Builder builder = new AlertDialog.Builder(mycontext);
 	    builder.setTitle(sdData[position-1].getName().replaceFirst("[.][^.]+$", ""));
 	    builder.setItems(R.array.dialog_array, new DialogInterface.OnClickListener() {
-	        public void onClick(DialogInterface dialog, int which) {
+	        public void onClick(final DialogInterface dialog, int which) {
 	        	switch(which) {
 	        	case 0:
 	        		Intent intent = new Intent();
@@ -273,12 +278,52 @@ public class FileManager extends Activity {
 	        		dialog.dismiss();
 	        		break;
 	        	case 2:
-	        		dialog.dismiss();
+	        		AlertDialog.Builder builder2 = new AlertDialog.Builder(mycontext);
+	        	    // Get the layout inflater
+	        	    LayoutInflater inflater = mycontext.getLayoutInflater();
+	        	    View item = inflater.inflate(R.layout.dialog_finfo, null);
+
+	        	    // Inflate and set the layout for the dialog
+	        	    // Pass null as the parent view because its going in the dialog layout
+	        	    builder2.setView(item);
+	        	    builder2.setTitle(sdData[position-1].getName().replaceFirst("[.][^.]+$", ""));
+	        	    builder2.setPositiveButton("Atrás",
+	        	            new DialogInterface.OnClickListener() {
+	        	                public void onClick(DialogInterface dialog2, int id) {
+	        	                    dialog2.cancel();
+	        	                    dialog.dismiss();
+	        	                }
+	        	            });
+	        	    
+	        	    TextView full_name = (TextView) item.findViewById(R.id.file_name_data);
+	        	    TextView modified = (TextView) item.findViewById(R.id.file_modified_data);
+	        	    TextView size = (TextView) item.findViewById(R.id.file_size_data);
+	        	    TextView extension = (TextView) item.findViewById(R.id.file_extension_data);
+	        	    TextView full_path = (TextView) item.findViewById(R.id.file_path_data);
+	        	    
+	        	    full_name.setText(sdData[position-1].getName());
+	        	    Date date = new Date(sdData[position-1].lastModified());
+	        	    DateFormat formatter = new SimpleDateFormat("dd/MM/yy - HH:mm:ss");
+	        	    String dateFormatted = formatter.format(date);
+	        	    modified.setText(dateFormatted);
+	        	    size.setText(humanReadableByteCount(sdData[position-1].length(), true));
+	        	    extension.setText(ext);
+	        	    full_path.setText(sdData[position-1].getPath());
+	        	    builder2.show();
+	        		
 	        		break;
 	        	}
 	        }
 	    });
 	    return builder.create();
+	}
+	
+	public static String humanReadableByteCount(long bytes, boolean si) {
+	    int unit = si ? 1000 : 1024;
+	    if (bytes < unit) return bytes + " B";
+	    int exp = (int) (Math.log(bytes) / Math.log(unit));
+	    String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
+	    return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
 	}
     
     public void onResume()

@@ -35,6 +35,11 @@
     <string name="doc_of">Documentos descargados</string>
     <string name="handle_1"><b>¡No tienes tarjeta SD!</b>\nLa tarjeta SD es necesaria para el uso de esta aplicación.</string>
     <string name="handle_2">Oops&#8230; No hemos sido capaces de encontrar ningún archivo.\n¿Aún no has descargado ninguno?</string>
+    <string name="modified">Última modificación:</string>
+    <string name="size">Tamaño:</string>
+     <string name="file_extension">Extensión:</string>
+    <string name="full_name">Nombre completo:</string>
+    <string name="full_path">Ruta del archivo:</string>
      
     <!-- - ACTIVITY -->
     <string name="newapi">NewApi</string>
