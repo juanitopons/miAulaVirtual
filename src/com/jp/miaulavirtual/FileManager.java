@@ -22,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -235,6 +236,52 @@ public class FileManager extends Activity {
 	                dialog.dismiss();
 	        		break;
 	        	case 1:
+	        		AlertDialog.Builder builder3 = new AlertDialog.Builder(mycontext);
+	        	    // Get the layout inflater
+	        	    LayoutInflater inflater2 = mycontext.getLayoutInflater();
+	        	    final View item2 = inflater2.inflate(R.layout.dialog_frename, null);
+
+	        	    // Inflate and set the layout for the dialog
+	        	    // Pass null as the parent view because its going in the dialog layout
+	        	    builder3.setView(item2);
+	        	    builder3.setTitle(sdData[position-1].getName().replaceFirst("[.][^.]+$", ""));
+	        	    builder3.setPositiveButton("Renombrar",
+	        	            new DialogInterface.OnClickListener() {
+	        	                public void onClick(DialogInterface dialog3, int id) {
+	        	                	EditText new_name = (EditText) item2.findViewById(R.id.file_rename);
+	        	                	String file_name = new_name.getText().toString();
+	        	                	if(file_name.length()==0) {
+	        	                		Toast.makeText(mycontext, "El archivo no puede ser renombrado con ese nombre!", Toast.LENGTH_SHORT).show();
+	        	                	} else {
+	        	                		File file = sdData[position-1];
+	        	                		try {
+	        	                		file.renameTo(new File(sdData[position-1].getParentFile(), file_name+"."+ext));
+	        	                		} catch(SecurityException e) {
+	        	                			Toast.makeText(mycontext, "No ha sido posible renombrar el archivo!", Toast.LENGTH_SHORT).show();
+	        	                		}
+	        	                		Toast.makeText(mycontext, "Archivo renombrado a: "+file_name+"."+ext, Toast.LENGTH_SHORT).show();
+	        	                	}
+	        	                	isHomePath = isHomePath(sdData[position-1].getParentFile().getAbsolutePath());
+	        	                	sdData = listFiles(sdData[position-1].getParentFile(), false);
+	        			    		lstAdapter2.setIsHomePath(isHomePath);
+	        			        	lstAdapter2.setData(sdData);
+	        			            lstAdapter2.notifyDataSetChanged();
+	        			    		// bye bye dialog
+	        	                	dialog3.dismiss();
+	        	                    dialog.dismiss();
+	        	                }
+	        	            });
+	        	    builder3.setNegativeButton("Cancelar",
+	        	            new DialogInterface.OnClickListener() {
+	        	                public void onClick(DialogInterface dialog3, int id) {
+	        	                	dialog3.cancel();
+	        	                    dialog.dismiss();
+	        	                }
+	        	    });
+	        	    // show dialog
+	        	    builder3.show();
+	        		break;
+	        	case 2:
 	        		// delete archive
 	        		sdData[position-1].delete();
 	            	
@@ -277,7 +324,7 @@ public class FileManager extends Activity {
 	        		// bye bye dialog
 	        		dialog.dismiss();
 	        		break;
-	        	case 2:
+	        	case 3:
 	        		AlertDialog.Builder builder2 = new AlertDialog.Builder(mycontext);
 	        	    // Get the layout inflater
 	        	    LayoutInflater inflater = mycontext.getLayoutInflater();
@@ -295,20 +342,25 @@ public class FileManager extends Activity {
 	        	                }
 	        	            });
 	        	    
-	        	    TextView full_name = (TextView) item.findViewById(R.id.file_name_data);
-	        	    TextView modified = (TextView) item.findViewById(R.id.file_modified_data);
-	        	    TextView size = (TextView) item.findViewById(R.id.file_size_data);
-	        	    TextView extension = (TextView) item.findViewById(R.id.file_extension_data);
-	        	    TextView full_path = (TextView) item.findViewById(R.id.file_path_data);
-	        	    
-	        	    full_name.setText(sdData[position-1].getName());
+	        	    // complete name
+	        	    TextView textview = (TextView) item.findViewById(R.id.file_name_data);
+	        	    textview.setText(sdData[position-1].getName());
+	        	    // modified date
+	        	    textview = (TextView) item.findViewById(R.id.file_modified_data);
 	        	    Date date = new Date(sdData[position-1].lastModified());
 	        	    DateFormat formatter = new SimpleDateFormat("dd/MM/yy - HH:mm:ss");
 	        	    String dateFormatted = formatter.format(date);
-	        	    modified.setText(dateFormatted);
-	        	    size.setText(humanReadableByteCount(sdData[position-1].length(), true));
-	        	    extension.setText(ext);
-	        	    full_path.setText(sdData[position-1].getPath());
+	        	    textview.setText(dateFormatted);
+	        	    // extension
+	        	    textview = (TextView) item.findViewById(R.id.file_extension_data);
+	        	    textview.setText(ext);
+	        	    // size
+	        	    textview = (TextView) item.findViewById(R.id.file_size_data);
+	        	    textview.setText(humanReadableByteCount(sdData[position-1].length(), true));
+	        	    // path
+	        	    textview = (TextView) item.findViewById(R.id.file_path_data);
+	        	    textview.setText(sdData[position-1].getPath());
+	        	    // show dialog
 	        	    builder2.show();
 	        		
 	        		break;
