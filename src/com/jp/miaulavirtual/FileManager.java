@@ -225,6 +225,7 @@ public class FileManager extends Activity {
 	        public void onClick(final DialogInterface dialog, int which) {
 	        	switch(which) {
 	        	case 0:
+	        		// open archive
 	        		Intent intent = new Intent();
 	                intent.setAction(android.content.Intent.ACTION_VIEW);
 	                intent.setDataAndType(Uri.fromFile(sdData[position-1]),doc_type);
@@ -236,6 +237,7 @@ public class FileManager extends Activity {
 	                dialog.dismiss();
 	        		break;
 	        	case 1:
+	        		// rename archive
 	        		AlertDialog.Builder builder3 = new AlertDialog.Builder(mycontext);
 	        	    // Get the layout inflater
 	        	    LayoutInflater inflater2 = mycontext.getLayoutInflater();
@@ -282,6 +284,19 @@ public class FileManager extends Activity {
 	        	    builder3.show();
 	        		break;
 	        	case 2:
+	        		// send archive
+	        	    Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
+	        	    emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, sdData[position-1].getName().replaceFirst("[.][^.]+$", ""));
+	        	    emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+sdData[position-1].getAbsolutePath()));
+	        	    String my_type = doc_type;
+	        	    emailIntent.setType(my_type);
+	        	    try {
+	                	startActivity(emailIntent);
+	            	} catch(ActivityNotFoundException e) {
+						Toast.makeText(mycontext, "Lo siento, no es posible iniciar la aplicación de email.", Toast.LENGTH_SHORT).show();
+					}
+	        		break;
+	        	case 3:
 	        		// delete archive
 	        		sdData[position-1].delete();
 	            	
@@ -324,7 +339,7 @@ public class FileManager extends Activity {
 	        		// bye bye dialog
 	        		dialog.dismiss();
 	        		break;
-	        	case 3:
+	        	case 4:
 	        		AlertDialog.Builder builder2 = new AlertDialog.Builder(mycontext);
 	        	    // Get the layout inflater
 	        	    LayoutInflater inflater = mycontext.getLayoutInflater();

@@ -26,7 +26,7 @@ Android version compatibility: 2.3 and onward
 + Open document after donwload
 + Compatibility with all virtual classroom themes and personalizations
 + Documents organized by subject
-+ Documents manager
++ Documents manager (open, rename, delete, send, information)
 
 ## To do ##
 + Add image type

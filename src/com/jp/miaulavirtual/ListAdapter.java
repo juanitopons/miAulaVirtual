@@ -25,6 +25,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -156,6 +157,7 @@ class ListAdapter extends BaseAdapter {
 	    	break;
 	    }
 	    if(!prefs.getBoolean("pattern", true)) title.setText(names[position].toString());
+	    Log.d("Tipo de archivo", String.valueOf(types[position].toString()));
         
         /*
          * Trick: When we clear the List (because user click any subject) we change the item count to 1 and we load the loading page (load_list) with restricted orientation.

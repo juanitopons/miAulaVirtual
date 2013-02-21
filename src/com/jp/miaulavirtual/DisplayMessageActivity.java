@@ -625,7 +625,7 @@ public class DisplayMessageActivity extends Activity {
 				types[i] = "1";
 				i++;
 			}
-		} else if(comun) {
+		} else if(comun && onData.size()<3) {
 			types = new String[size];
 			types[0] = "0";
 			while(i<size) {

@@ -33,6 +33,7 @@
     <string name="a_2">Eliminar archivo</string>
     <string name="a_3">Información</string>
     <string name="a_4">Renombrar archivo</string>
+    <string name="a_5">Enviar/Compartir archivo</string>
     <string name="doc_of">Documentos descargados</string>
     <string name="handle_1"><b>¡No tienes tarjeta SD!</b>\nLa tarjeta SD es necesaria para el uso de esta aplicación.</string>
     <string name="handle_2">Oops&#8230; No hemos sido capaces de encontrar ningún archivo.\n¿Aún no has descargado ninguno?</string>
