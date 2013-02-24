@@ -344,7 +344,7 @@ public class FileManager extends Activity {
 	        	    // Get the layout inflater
 	        	    LayoutInflater inflater = mycontext.getLayoutInflater();
 	        	    View item = inflater.inflate(R.layout.dialog_finfo, null);
-
+	        	    
 	        	    // Inflate and set the layout for the dialog
 	        	    // Pass null as the parent view because its going in the dialog layout
 	        	    builder2.setView(item);

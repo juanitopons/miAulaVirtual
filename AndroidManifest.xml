@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.jp.miaulavirtual"
     android:versionCode="4"
-    android:versionName="2.0" >
+    android:versionName="1.5" >
 
     <uses-sdk
         android:minSdkVersion="9"
@@ -62,15 +62,6 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.jp.miaulavirtual.MainActivity" />
-        </activity>
-        <activity
-            android:name="com.jp.miaulavirtual.TaskManager"
-            android:label="@string/title_activity_task_manager"
-            android:launchMode="singleTop"
-            android:parentActivityName="com.jp.miaulavirtual.TabsActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.jp.miaulavirtual.TabsActivity" />
         </activity>
         <activity
             android:name="com.jp.miaulavirtual.AboutActivity"

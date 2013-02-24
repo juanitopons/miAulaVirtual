@@ -21,33 +21,25 @@ public class TabsActivity extends TabActivity {
  
         TabHost tabHost = getTabHost();
  
-        // Tab for Photos
-        TabSpec photospec = tabHost.newTabSpec("Photos");
+        // Tab for Docs
+        TabSpec docsspec = tabHost.newTabSpec("Documentos");
         // setting Title and Icon for the Tab
-        photospec.setIndicator("Documentos", getResources().getDrawable(R.drawable.tab_indicator_ab_actionbar));
+        docsspec.setIndicator("Documentos", getResources().getDrawable(R.drawable.tab_indicator_ab_actionbar));
         
         Intent intent = getIntent();
         Intent myintent = new Intent(intent);
         myintent.setClass(this, DisplayMessageActivity.class);
-        Log.d("Actividad", "Creando DisplayMessage");
-        photospec.setContent(myintent);
+        docsspec.setContent(myintent);
  
-        // Tab for Songs
-        TabSpec songspec = tabHost.newTabSpec("Songs");
-        songspec.setIndicator("Gestor", getResources().getDrawable(R.drawable.tab_indicator_ab_actionbar));
+        // Tab for Manager
+        TabSpec managerspec = tabHost.newTabSpec("Gestor");
+        managerspec.setIndicator("Gestor", getResources().getDrawable(R.drawable.tab_indicator_ab_actionbar));
         Intent songsIntent = new Intent(this, FileManager.class);
-        songspec.setContent(songsIntent);
- 
-        // Tab for Videos
-        TabSpec videospec = tabHost.newTabSpec("Videos");
-        videospec.setIndicator("Tareas", getResources().getDrawable(R.drawable.tab_indicator_ab_actionbar));
-        Intent videosIntent = new Intent(this, FileManager.class);
-        videospec.setContent(videosIntent);
+        managerspec.setContent(songsIntent);
  
         // Adding all TabSpec to TabHost
-        tabHost.addTab(photospec); // Adding photos tab
-        tabHost.addTab(songspec); // Adding songs tab
-        tabHost.addTab(videospec); // Adding videos tab
+        tabHost.addTab(docsspec); // Adding docs tab
+        tabHost.addTab(managerspec); // Adding manager tab
         
         TabWidget tw = getTabWidget();
 
