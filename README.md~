@@ -1,6 +1,7 @@
 miAulaVirtual
 =============
 
+-- VERSIONING BRANCH --
 Android native App that connect to the virtual classroom of the University of Valencia and pull up student's information through scrapping (JSoup Library) and presents a friendly-mobile interface to be able to download archives in Android devices.
 
 <i>Omnia sunt communia</i>
@@ -13,7 +14,7 @@ It is a standard version of miAulaVirtual, whose development and adaptation shou
 Developed with usage of: Java, XML, Android, JSoup's licensed library and other licensed Java libraries.
 
 ## Current version ##
-1.0.1
+2.0
 
 Android version compatibility: 2.3 and onward
 
@@ -49,10 +50,20 @@ Android version compatibility: 2.3 and onward
 + Add 'cancel' button while downloading - <b><i>DONE</i></b>
 
 ## Change Log ##
-<b>1.0.1</b>
+<b>1.5</b><br />
+22-February-2013
++ Added File Manager (open, delete, rename, send/share, file properties)
++ Fixed communities bug>
+
+<b>1.0.2</b><br />
+16-February-2013
++ Fixed last version bug
+
+<b>1.0.1</b><br />
 16-February-2013
 + Fixed some not very significant bugs
-<b>1.0</b>
+
+<b>1.0</b><br />
 14-February-2013
 + Initial version
 
