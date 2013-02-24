@@ -59,11 +59,11 @@ Android version compatibility: 2.3 and onward
 + Fixed last version bug
 
 <b>1.0.1</b><br />
-16-February-2013<br />
+16-February-2013
 + Fixed some not very significant bugs
 
 <b>1.0</b><br />
-14-February-2013<br />
+14-February-2013
 + Initial version
 
 ## Known issues ##
