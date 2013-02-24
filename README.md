@@ -53,7 +53,7 @@ Android version compatibility: 2.3 and onward
 22-February-2013
 + Added File Manager (open, delete, rename, send/share, file properties)
 + Fixed communities bug
-<b>1.0.2</b>
+<br /><b>1.0.2</b>\n
 16-February-2013
 + Fixed last version bug
 <b>1.0.1</b>
