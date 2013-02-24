@@ -63,7 +63,7 @@
     <string name="footer">Copyright 2013 Juan Pons - GNU GPL v3.0 | @juanitopons</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_file_manager">Gestor archivos</string>
-    <string name="title_activity_tabs">TabsActivity</string>
+    <string name="title_activity_tabs">miAulaVirtual</string>
     <string name="title_activity_task_manager">Tareas</string>
     <string name="title_activity_about">Acerca de</string>
 
