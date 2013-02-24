@@ -49,18 +49,18 @@ Android version compatibility: 2.3 and onward
 + Add 'cancel' button while downloading - <b><i>DONE</i></b>
 
 ## Change Log ##
-<b>1.5</b>
-22-February-2013
+<b>1.5</b><br />
+22-February-2013<br />
 + Added File Manager (open, delete, rename, send/share, file properties)
-+ Fixed communities bug
-<br /><b>1.0.2</b>\n
-16-February-2013
-+ Fixed last version bug
-<b>1.0.1</b>
-16-February-2013
-+ Fixed some not very significant bugs
-<b>1.0</b>
-14-February-2013
++ Fixed communities bug<br />
+<br /><b>1.0.2</b><br />
+16-February-2013<br />
++ Fixed last version bug<br />
+<br /><b>1.0.1</b><br />
+16-February-2013<br />
++ Fixed some not very significant bugs<br />
+<br /><b>1.0</b><br />
+14-February-2013<br />
 + Initial version
 
 ## Known issues ##
