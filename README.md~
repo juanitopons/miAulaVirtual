@@ -50,15 +50,18 @@ Android version compatibility: 2.3 and onward
 
 ## Change Log ##
 <b>1.5</b><br />
-22-February-2013<br />
+22-February-2013
 + Added File Manager (open, delete, rename, send/share, file properties)
 + Fixed communities bug<br />
+
 <br /><b>1.0.2</b><br />
 16-February-2013<br />
 + Fixed last version bug<br />
+
 <br /><b>1.0.1</b><br />
 16-February-2013<br />
-+ Fixed some not very significant bugs<br />
++ Fixed some not very significant bugs /+<br />
+
 <br /><b>1.0</b><br />
 14-February-2013<br />
 + Initial version
