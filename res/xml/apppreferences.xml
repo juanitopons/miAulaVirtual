@@ -30,5 +30,23 @@
             android:defaultValue="true"
             android:summary="Recortar patrones en nombres de carpetas. Año, código, etc."
             android:key="pattern" />
-        </PreferenceCategory>      
+        </PreferenceCategory>  
+                <PreferenceCategory android:title="Tareas">
+         <EditTextPreference
+	         android:summary="Nº de la carpeta en la que está la sección Tareas. Ej: 0 = 'Mi Portal'. Por defecto: 1 = 'Mis Calendarios'"
+	         android:defaultValue="1"
+	         android:title="Panel de Calendarios"
+	         android:key="task_panel"
+	         android:maxLength="1"
+	         android:inputType="number"
+         />   
+        <EditTextPreference
+	         android:summary="Periódo de días para buscar tareas. Por defecto: 25"
+	         android:defaultValue="25"
+	         android:title="Periódo de tareas"
+	         android:key="task_period"
+	         android:maxLength="2"
+	         android:inputType="number"
+         />   
+         </PreferenceCategory>
 </PreferenceScreen>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content"
+  android:orientation="horizontal">
+		<TextView android:id="@+id/reload"
+    	android:layout_width="match_parent"
+    	android:layout_height="match_parent"
+    	android:background="#E0DCD3"
+    	android:textStyle="normal"
+    	android:textColor="#3d3d3d"
+    	android:text="@string/reload"
+    	android:gravity="center"
+    	android:layout_marginTop="6dp"
+    	android:paddingTop="18dp"
+    	android:paddingBottom="18dp"
+    	android:paddingRight="8dp"
+    	android:paddingLeft="8dp"
+    	android:textSize="16sp"
+    	android:onClick="reloadContent" />
+</LinearLayout>

@@ -346,11 +346,11 @@ public class MainActivity extends Activity {
     
     public void setData() throws IOException, SocketTimeoutException {
     	
-    	Document av = Jsoup.connect("https://aulavirtual.uv.es/dotlrn/index").timeout(10*1000).get();
+    	Document av = Jsoup.connect("http://aulavirtual.uv.es").timeout(10*1000).get();
 	    	
 		Elements inputs = av.select("input[name=__confirmed_p], input[name=__refreshing_p], input[name=form:id], input[name=form:mode], input[name=formbutton:ok], input[name=hash], input[name=time], input[name=token_id]");
 			
-		Response resp = Jsoup.connect("https://aulavirtual.uv.es/register/")
+		Response resp = Jsoup.connect("http://aulavirtual.uv.es/register/")
 			    .data("__confirmed_p", inputs.get(2).attr("value"), "__refreshing_p", inputs.get(3).attr("value"), "form:id", inputs.get(1).attr("value"), "form:mode", inputs.get(0).attr("value"), "formbutton:ok", inputs.get(7).attr("value"), "hash", inputs.get(6).attr("value"), "time", inputs.get(4).attr("value"), "return_url", url, "token_id", inputs.get(5).attr("value"), "username", user, "password", pass)
 			    .method(Method.POST)
 			    .timeout(10*1000)

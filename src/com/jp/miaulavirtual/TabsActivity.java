@@ -38,9 +38,9 @@ public class TabsActivity extends TabActivity {
         managerspec.setContent(songsIntent);
         
         // Tab for Tasks
-        TabSpec taskspec = tabHost.newTabSpec("Videos");
+        TabSpec taskspec = tabHost.newTabSpec("Tareas");
         taskspec.setIndicator("Tareas", getResources().getDrawable(R.drawable.tab_indicator_ab_actionbar));
-        Intent videosIntent = new Intent(this, FileManager.class);
+        Intent videosIntent = new Intent(this, TaskManager.class);
         taskspec.setContent(videosIntent);
  
         // Adding all TabSpec to TabHost

@@ -365,6 +365,7 @@ public class DisplayMessageActivity extends Activity {
 			            	Log.d("URL", onData.get(onData.size() - 1)[0]);
 			            	
 			            	url = urls[clickedPosition].toString();
+			            	Log.d("URL2", urls[clickedPosition].toString());
 			            	new urlConnect().execute();
 		            	}
 		            } else {
@@ -802,11 +803,11 @@ public class DisplayMessageActivity extends Activity {
     
     public void setData() throws IOException, SocketTimeoutException {
     	
-    	Document av = Jsoup.connect("https://aulavirtual.uv.es/dotlrn/index").timeout(10*1000).get();
+    	Document av = Jsoup.connect("http://aulavirtual.uv.es").timeout(10*1000).get();
 	    	
 		Elements inputs = av.select("input[name=__confirmed_p], input[name=__refreshing_p], input[name=form:id], input[name=form:mode], input[name=formbutton:ok], input[name=hash], input[name=time], input[name=token_id]");
 			
-		Response resp = Jsoup.connect("https://aulavirtual.uv.es/register/")
+		Response resp = Jsoup.connect("http://aulavirtual.uv.es/register/")
 			    .data("__confirmed_p", inputs.get(2).attr("value"), "__refreshing_p", inputs.get(3).attr("value"), "form:id", inputs.get(1).attr("value"), "form:mode", inputs.get(0).attr("value"), "formbutton:ok", inputs.get(7).attr("value"), "hash", inputs.get(6).attr("value"), "time", inputs.get(4).attr("value"), "return_url", url, "token_id", inputs.get(5).attr("value"), "username", user, "password", pass)
 			    .method(Method.POST)
 			    .timeout(10*1000)
@@ -822,10 +823,10 @@ public class DisplayMessageActivity extends Activity {
     }
 	
 	public void connectGet() throws IOException, SocketTimeoutException {
-		Response resp = Jsoup.connect("https://aulavirtual.uv.es"+ url).cookies(cookies).method(Method.GET).timeout(10*1000).execute();
+		Response resp = Jsoup.connect("http://aulavirtual.uv.es"+ url).cookies(cookies).method(Method.GET).timeout(10*1000).execute();
 		res = resp;
 		Log.d("Connect", "Conectando con cookies");
-		Log.d("URL", "https://aulavirtual.uv.es"+url);
+		Log.d("URL", "http://aulavirtual.uv.es"+url);
 		Log.d("COOKIE GET", resp.cookies().toString());
 	}
 	
@@ -842,7 +843,7 @@ public class DisplayMessageActivity extends Activity {
 		// Codificamos la URL del archivo
     	try {
 			uri = new URI(
-				    "https", 
+				    "http", 
 				    "aulavirtual.uv.es", 
 				    url,
 				    null);
@@ -854,7 +855,7 @@ public class DisplayMessageActivity extends Activity {
     	Log.d("Document", request);
     	
     	// Recheck cookie isn't expire
-    	Response resp = Jsoup.connect("https://aulavirtual.uv.es"+ url_back).cookies(cookies).method(Method.GET).timeout(10*1000).execute();
+    	Response resp = Jsoup.connect("http://aulavirtual.uv.es"+ url_back).cookies(cookies).method(Method.GET).timeout(10*1000).execute();
     	res = resp;
     	Log.d("Document", "Respuesta2");
     	Log.d("Cookie", res.cookies().toString());

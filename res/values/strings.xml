@@ -14,6 +14,7 @@
     <!-- - DISPLAY -->
     <string name="panel_error">¡No tienes ninguna carpeta! Esto seguramente es debido a una mala configuración del Panel de Documentos.\n Dirígete a <b>Preferencias</b> para saber más al respecto</string>
     <string name="panel_error2">El nº de Panel de Documentos indicado no existe</string>
+     <string name="panel_error3">¡No tienes ninguna  tarea! Esto seguramente es debido a una mala configuración del Panel de Tareas.\n Dirígete a <b>Preferencias</b> para saber más al respecto</string>
 
     <!-- - DOCS -->
     <string name="mydocs">Mis Documentos</string>
@@ -43,6 +44,10 @@
     <string name="full_name">Nombre completo:</string>
     <string name="full_path">Ruta del archivo:</string>
     <string name="file_rename">Nombre archivo</string>
+    
+    <!-- - TASKS -->
+    <string name="reload">¡Problema de conexión!\nHaga clic aquí para recargar.</string>
+    <string name="no_tasks">No tienes ninguna tarea para el período de días seleccionado.</string>
      
     <!-- - ACTIVITY -->
     <string name="newapi">NewApi</string>
