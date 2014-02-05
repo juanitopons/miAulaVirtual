@@ -346,7 +346,7 @@ public class MainActivity extends Activity {
     
     public void setData() throws IOException, SocketTimeoutException {
     	
-    	Document av = Jsoup.connect("http://aulavirtual.uv.es").timeout(10*1000).get();
+    	Document av = Jsoup.connect("http://aulavirtual.uv.es/register").timeout(10*1000).get();
 	    	
 		Elements inputs = av.select("input[name=__confirmed_p], input[name=__refreshing_p], input[name=form:id], input[name=form:mode], input[name=formbutton:ok], input[name=hash], input[name=time], input[name=token_id]");
 			
